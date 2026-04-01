@@ -1,0 +1,33 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+npm-debug.log*
+
+# Python
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.sqlite3
+backend/media/
+backend/staticfiles/
+*.pyc
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+backend/local.env
+
+# Temporary and backups
+*.tmp
+*.temp
+*~
+.$*.bkp
+~$*.xlsx
+
+# Old/duplicate workspace folder
+valor_agro_consorcios/

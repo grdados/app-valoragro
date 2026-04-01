@@ -1,0 +1,45 @@
+databases:
+  - name: valoragro-db
+    databaseName: valoragro
+    user: valoragro
+    plan: free
+
+services:
+  - type: web
+    name: valoragro-backend
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input
+    startCommand: python manage.py migrate --no-input && gunicorn config.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.2
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: DB_NAME
+        fromDatabase:
+          name: valoragro-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: valoragro-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: valoragro-db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: valoragro-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: valoragro-db
+          property: port
