@@ -95,14 +95,6 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <p className="text-xs text-gray-500 font-medium mb-2">Usuários de demonstração:</p>
-            <div className="space-y-1 text-xs text-gray-600">
-              <p><span className="font-mono bg-gray-200 px-1 rounded">admin</span> / <span className="font-mono bg-gray-200 px-1 rounded">admin123</span> — Administrador</p>
-              <p><span className="font-mono bg-gray-200 px-1 rounded">carlos</span> / <span className="font-mono bg-gray-200 px-1 rounded">coord123</span> — Coordenador</p>
-              <p><span className="font-mono bg-gray-200 px-1 rounded">joao</span> / <span className="font-mono bg-gray-200 px-1 rounded">vend123</span> — Vendedor</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
