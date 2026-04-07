@@ -22,7 +22,7 @@ export default function LoginPage() {
     try {
       await login(data.username, data.password)
       toast.success('Bem-vindo!')
-      navigate('/dashboard')
+      navigate('/painel/dashboard')
     } catch (err: unknown) {
       const error = err as { response?: { data?: { detail?: string } } }
       toast.error(error?.response?.data?.detail || 'Credenciais inválidas')

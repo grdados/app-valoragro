@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthContext, useAuthProvider } from './hooks/useAuth'
 import Layout from './components/Layout'
+import LandingPage from './pages/Landing'
 import LoginPage from './pages/Login'
 import DashboardPage from './pages/Dashboard'
 import VendasPage from './pages/Vendas'
@@ -32,16 +33,17 @@ function AppRoutes() {
     <AuthContext.Provider value={authValue}>
       <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route
-          path="/"
+          path="/painel"
           element={
             <ProtectedRoute>
               <Layout />
             </ProtectedRoute>
           }
         >
-          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route index element={<Navigate to="/painel/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="vendas" element={<VendasPage />} />
           <Route path="vendas/nova" element={<NovaVendaPage />} />
@@ -58,7 +60,22 @@ function AppRoutes() {
           <Route path="cadastros/faixas" element={<FaixasPage />} />
           <Route path="cadastros/usuarios" element={<UsuariosPage />} />
         </Route>
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<Navigate to="/painel/dashboard" replace />} />
+        <Route path="/vendas" element={<Navigate to="/painel/vendas" replace />} />
+        <Route path="/vendas/nova" element={<Navigate to="/painel/vendas/nova" replace />} />
+        <Route path="/comissoes" element={<Navigate to="/painel/comissoes" replace />} />
+        <Route path="/relatorios" element={<Navigate to="/painel/relatorios" replace />} />
+        <Route path="/clientes" element={<Navigate to="/painel/clientes" replace />} />
+        <Route path="/empresa" element={<Navigate to="/painel/empresa" replace />} />
+        <Route path="/licencas" element={<Navigate to="/painel/licencas" replace />} />
+        <Route path="/cadastros/supervisores" element={<Navigate to="/painel/cadastros/supervisores" replace />} />
+        <Route path="/cadastros/coordenadores" element={<Navigate to="/painel/cadastros/coordenadores" replace />} />
+        <Route path="/cadastros/vendedores" element={<Navigate to="/painel/cadastros/vendedores" replace />} />
+        <Route path="/cadastros/consorcios" element={<Navigate to="/painel/cadastros/consorcios" replace />} />
+        <Route path="/cadastros/assembleias" element={<Navigate to="/painel/cadastros/assembleias" replace />} />
+        <Route path="/cadastros/faixas" element={<Navigate to="/painel/cadastros/faixas" replace />} />
+        <Route path="/cadastros/usuarios" element={<Navigate to="/painel/cadastros/usuarios" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthContext.Provider>
   )

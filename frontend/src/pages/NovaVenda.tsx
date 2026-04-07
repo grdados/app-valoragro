@@ -115,7 +115,7 @@ export default function NovaVendaPage() {
       })
       await comissoesApi.gerar(vendaRes.data.id)
       toast.success('Venda registrada e comissões geradas!')
-      navigate('/vendas')
+      navigate('/painel/vendas')
     } catch (err: unknown) {
       const error = err as { response?: { data?: Record<string, string[]> } }
       const msgs = Object.entries(error?.response?.data || {}).map(([k, v]) => `${k}: ${v}`).join('; ')
@@ -131,7 +131,7 @@ export default function NovaVendaPage() {
         title="Nova Venda"
         subtitle="Registre uma nova venda de consórcio"
         actions={
-          <button onClick={() => navigate('/vendas')} className="btn-secondary">
+          <button onClick={() => navigate('/painel/vendas')} className="btn-secondary">
             <ArrowLeft className="w-4 h-4" />
             Voltar
           </button>

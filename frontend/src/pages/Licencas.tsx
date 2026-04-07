@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import { licencasApi } from '../services/api'
 import PageHeader from '../components/PageHeader'
 import { formatCurrency, formatDate } from '../lib/utils'
+import { useAuth } from '../hooks/useAuth'
 import type { Licenca, PagamentoLicenca } from '../types'
 
 const STATUS_BADGE: Record<string, string> = {
@@ -14,6 +15,7 @@ const STATUS_BADGE: Record<string, string> = {
 }
 
 export default function LicencasPage() {
+  const { isDev } = useAuth()
   const [licencas, setLicencas] = useState<Licenca[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -72,9 +74,11 @@ export default function LicencasPage() {
         title="Controle de Licenças"
         subtitle="Gerenciamento de mensalidades por empresa"
         actions={
-          <button onClick={openCreate} className="btn-primary">
-            <Plus className="w-4 h-4" /> Nova Licença
-          </button>
+          isDev() ? (
+            <button onClick={openCreate} className="btn-primary">
+              <Plus className="w-4 h-4" /> Nova Licença
+            </button>
+          ) : undefined
         }
       />
 
@@ -98,10 +102,14 @@ export default function LicencasPage() {
                 </div>
               </div>
               <div className="flex gap-2 shrink-0">
-                <button onClick={() => openPagamento(l)} className="btn-secondary text-sm">+ Pagamento</button>
-                <button onClick={() => openEdit(l)} className="p-1.5 rounded hover:bg-blue-50 text-blue-600">
-                  <Pencil className="w-4 h-4" />
-                </button>
+                {isDev() && (
+                  <>
+                    <button onClick={() => openPagamento(l)} className="btn-secondary text-sm">+ Pagamento</button>
+                    <button onClick={() => openEdit(l)} className="p-1.5 rounded hover:bg-blue-50 text-blue-600">
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -139,7 +147,7 @@ export default function LicencasPage() {
         ))}
       </div>
 
-      {showModal && (
+      {showModal && isDev() && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg">
             <div className="flex items-center justify-between px-6 py-4 border-b">
@@ -203,7 +211,7 @@ export default function LicencasPage() {
         </div>
       )}
 
-      {showPagModal && selectedLicenca && (
+      {showPagModal && selectedLicenca && isDev() && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm">
             <div className="flex items-center justify-between px-6 py-4 border-b">
@@ -247,3 +255,5 @@ export default function LicencasPage() {
     </div>
   )
 }
+
+

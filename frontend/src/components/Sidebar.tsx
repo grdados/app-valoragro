@@ -20,34 +20,34 @@ interface NavItem {
 }
 
 const mainNav: NavItem[] = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/vendas', icon: ShoppingCart, label: 'Vendas' },
-  { to: '/comissoes', icon: DollarSign, label: 'Comissões' },
-  { to: '/relatorios', icon: FileText, label: 'Relatórios' },
-  { to: '/clientes', icon: UserCircle, label: 'Clientes' },
+  { to: '/painel/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/painel/vendas', icon: ShoppingCart, label: 'Vendas' },
+  { to: '/painel/comissoes', icon: DollarSign, label: 'Comissões' },
+  { to: '/painel/relatorios', icon: FileText, label: 'Relatórios' },
+  { to: '/painel/clientes', icon: UserCircle, label: 'Clientes' },
 ]
 
 const supervisorNav: NavItem[] = [
-  { to: '/cadastros/supervisores', icon: Shield, label: 'Supervisores' },
-  { to: '/cadastros/coordenadores', icon: UserCheck, label: 'Coordenadores' },
-  { to: '/cadastros/vendedores', icon: Users, label: 'Vendedores' },
-  { to: '/cadastros/consorcios', icon: Building2, label: 'Consórcios' },
-  { to: '/cadastros/assembleias', icon: Calendar, label: 'Assembleias' },
-  { to: '/cadastros/faixas', icon: Layers, label: 'Faixas de Comissão' },
-  { to: '/empresa', icon: Package, label: 'Dados da Empresa' },
-  { to: '/cadastros/usuarios', icon: Settings, label: 'Usuários' },
+  { to: '/painel/cadastros/supervisores', icon: Shield, label: 'Supervisores' },
+  { to: '/painel/cadastros/coordenadores', icon: UserCheck, label: 'Coordenadores' },
+  { to: '/painel/cadastros/vendedores', icon: Users, label: 'Vendedores' },
+  { to: '/painel/cadastros/consorcios', icon: Building2, label: 'Consórcios' },
+  { to: '/painel/cadastros/assembleias', icon: Calendar, label: 'Assembleias' },
+  { to: '/painel/cadastros/faixas', icon: Layers, label: 'Faixas de Comissão' },
+  { to: '/painel/empresa', icon: Package, label: 'Dados da Empresa' },
+  { to: '/painel/cadastros/usuarios', icon: Settings, label: 'Usuários' },
 ]
 
 const coordenadorNav: NavItem[] = [
-  { to: '/cadastros/vendedores', icon: Users, label: 'Vendedores' },
+  { to: '/painel/cadastros/vendedores', icon: Users, label: 'Vendedores' },
 ]
 
 const devOnlyNav: NavItem[] = [
-  { to: '/licencas', icon: Key, label: 'Licenças' },
+  { to: '/painel/licencas', icon: Key, label: 'Licenças' },
 ]
 
 const supervisorInfoNav: NavItem[] = [
-  { to: '/licencas', icon: Key, label: 'Licença' },
+  { to: '/painel/licencas', icon: Key, label: 'Licença' },
 ]
 
 export default function Sidebar({ open, onToggle }: SidebarProps) {
