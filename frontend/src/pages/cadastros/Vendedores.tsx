@@ -31,6 +31,7 @@ export default function VendedoresPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Vendedor | null>(null)
   const [saving, setSaving] = useState(false)
+  const [formError, setFormError] = useState('')
   const [fotoFile, setFotoFile] = useState<File | null>(null)
   const [fotoPreview, setFotoPreview] = useState<string>('')
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>()
@@ -51,6 +52,7 @@ export default function VendedoresPage() {
 
   const openCreate = () => {
     setEditing(null)
+    setFormError('')
     setFotoFile(null)
     setFotoPreview('')
     const defaultCoord = isCoordenador() && coordenadores.length > 0 ? coordenadores[0].id : undefined
@@ -60,6 +62,7 @@ export default function VendedoresPage() {
 
   const openEdit = (item: Vendedor) => {
     setEditing(item)
+    setFormError('')
     setFotoFile(null)
     setFotoPreview(item.foto || '')
     reset(item)
@@ -68,6 +71,7 @@ export default function VendedoresPage() {
 
   const onSubmit = async (data: FormData) => {
     setSaving(true)
+    setFormError('')
     if (isCoordenador() && !data.coordenador && coordenadores.length > 0) {
       data.coordenador = coordenadores[0].id
     }
@@ -95,7 +99,10 @@ export default function VendedoresPage() {
       const error = err as { response?: { data?: { detail?: string } & Record<string, string[]> } }
       const detail = error?.response?.data?.detail
       const firstField = Object.values(error?.response?.data || {}).flat?.()[0]
-      toast.error(String(detail || firstField || 'Erro ao salvar vendedor/foto'))
+      const msg = String(detail || firstField || 'Erro ao salvar vendedor/foto')
+      setFormError(msg)
+      toast.error('Falha ao salvar. Veja o detalhe no formulário.')
+      console.error('Erro ao salvar vendedor/foto:', err)
     } finally { setSaving(false) }
   }
 
@@ -230,6 +237,11 @@ export default function VendedoresPage() {
             <input type="checkbox" id="ativo" {...register('ativo')} className="w-4 h-4" />
             <label htmlFor="ativo" className="text-sm">Ativo</label>
           </div>
+          {formError && (
+            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {formError}
+            </div>
+          )}
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary">Cancelar</button>
             <button type="submit" disabled={saving} className="btn-primary">{saving ? 'Salvando...' : 'Salvar'}</button>
