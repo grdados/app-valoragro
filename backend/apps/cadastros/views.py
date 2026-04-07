@@ -1,11 +1,13 @@
 from rest_framework import viewsets, permissions
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from apps.accounts.permissions import IsAdmin, IsSupervisorOrAbove, IsAdminOrCoordenador
 from .models import Supervisor, Cliente, Coordenador, Vendedor, TipoBem, COBAN, Consorcio, FaixaComissao, Assembleia
 from .serializers import (
     SupervisorSerializer, ClienteSerializer, CoordenadorSerializer, VendedorSerializer,
-    TipoBemSerializer, COBANSerializer, ConsorcioSerializer, FaixaComissaoSerializer, AssembleiaSerializer,
+    PublicVendedorSerializer, TipoBemSerializer, COBANSerializer, ConsorcioSerializer,
+    FaixaComissaoSerializer, AssembleiaSerializer,
 )
 
 
@@ -154,3 +156,12 @@ class AssembleiaViewSet(viewsets.ModelViewSet):
     queryset = Assembleia.objects.select_related("consorcio")
     serializer_class = AssembleiaSerializer
     permission_classes = [permissions.IsAuthenticated, IsSupervisorOrAbove]
+
+
+class PublicVendedoresListView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        queryset = Vendedor.objects.filter(ativo=True).order_by("nome")
+        serializer = PublicVendedorSerializer(queryset, many=True)
+        return Response(serializer.data)

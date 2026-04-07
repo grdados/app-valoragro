@@ -54,6 +54,12 @@ class VendedorSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "criado_em"]
 
 
+class PublicVendedorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vendedor
+        fields = ["id", "nome", "email", "telefone", "foto", "cidade", "uf"]
+
+
 class TipoBemSerializer(serializers.ModelSerializer):
     nome_display = serializers.CharField(source="get_nome_display", read_only=True)
 

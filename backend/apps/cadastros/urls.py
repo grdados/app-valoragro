@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     SupervisorViewSet, ClienteViewSet, CoordenadorViewSet, VendedorViewSet,
     TipoBemViewSet, COBANViewSet, ConsorcioViewSet, FaixaComissaoViewSet, AssembleiaViewSet,
+    PublicVendedoresListView,
 )
 
 router = DefaultRouter()
@@ -17,5 +18,6 @@ router.register("faixas-comissao", FaixaComissaoViewSet, basename="faixas-comiss
 router.register("assembleias", AssembleiaViewSet, basename="assembleias")
 
 urlpatterns = [
+    path("public/vendedores/", PublicVendedoresListView.as_view(), name="public-vendedores"),
     path("", include(router.urls)),
 ]

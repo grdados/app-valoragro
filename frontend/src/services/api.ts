@@ -80,6 +80,10 @@ export const vendedoresApi = {
   remove: (id: number) => api.delete(`/vendedores/${id}/`),
 }
 
+export const publicApi = {
+  listVendedores: () => api.get('/public/vendedores/'),
+}
+
 export const tiposBemApi = {
   list: () => api.get('/tipos-bem/'),
   create: (data: ApiPayload) => api.post('/tipos-bem/', data),
