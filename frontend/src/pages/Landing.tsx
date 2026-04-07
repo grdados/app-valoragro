@@ -279,59 +279,48 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <section id="inicio" className="relative pt-24 pb-16 overflow-hidden">
+      <section id="inicio" className="relative pt-24 pb-10 overflow-hidden min-h-[78vh] lg:min-h-[85vh]">
         {HERO_SLIDES.map((slide, idx) => (
           <div
             key={slide.id}
-            className={`absolute inset-0 transition-opacity duration-700 bg-gradient-to-br ${slide.bg} ${
-              idx === heroAtivo ? 'opacity-100' : 'opacity-0'
-            }`}
-          />
-        ))}
-        <div className="absolute inset-0 bg-black/30" />
-
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="card border-0 bg-white/95 backdrop-blur-md shadow-2xl overflow-hidden">
-            <div className="grid lg:grid-cols-2">
-              <div className="p-8 lg:p-12">
-                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 text-[#1B4F8C] px-3 py-1 text-xs font-semibold">
-                  <UserRound className="w-4 h-4" />
-                  {HERO_SLIDES[heroAtivo].badge}
-                </span>
-                <h1 className="mt-4 text-3xl lg:text-4xl font-extrabold leading-tight text-slate-900">
-                  {HERO_SLIDES[heroAtivo].titulo}
-                </h1>
-                <p className="mt-3 text-slate-600 text-lg">{HERO_SLIDES[heroAtivo].descricao}</p>
-                <button
-                  className="btn-primary mt-6"
-                  onClick={() => irParaSimulacao(HERO_SLIDES[heroAtivo].segmento)}
-                >
-                  Simular Agora
-                </button>
-              </div>
-              <div className="relative min-h-[280px] lg:min-h-[420px]">
-                {HERO_SLIDES.map((slide, idx) => (
-                  <img
-                    key={slide.id}
-                    src={slide.imagem}
-                    alt={slide.badge}
-                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
-                      idx === heroAtivo ? 'opacity-100' : 'opacity-0'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
+            className={`absolute inset-0 transition-opacity duration-700 ${idx === heroAtivo ? 'opacity-100' : 'opacity-0'}`}
+          >
+            <img src={slide.imagem} alt={slide.badge} className="w-full h-full object-cover" />
+            <div className={`absolute inset-0 bg-gradient-to-br ${slide.bg} mix-blend-multiply`} />
           </div>
+        ))}
+        <div className="absolute inset-0 bg-black/35" />
 
-          <div className="mt-5 flex items-center justify-between">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 h-full flex items-center">
+          <div className="max-w-2xl text-white py-10">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/20 border border-white/40 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
+              <UserRound className="w-4 h-4" />
+              {HERO_SLIDES[heroAtivo].badge}
+            </span>
+            <h1 className="mt-4 text-4xl lg:text-6xl font-extrabold leading-tight drop-shadow-sm">
+              {HERO_SLIDES[heroAtivo].titulo}
+            </h1>
+            <p className="mt-4 text-lg lg:text-xl text-slate-100 max-w-xl">
+              {HERO_SLIDES[heroAtivo].descricao}
+            </p>
+            <button
+              className="btn-primary mt-6 bg-white text-[#1B4F8C] hover:bg-slate-100"
+              onClick={() => irParaSimulacao(HERO_SLIDES[heroAtivo].segmento)}
+            >
+              Simular Agora
+            </button>
+          </div>
+        </div>
+
+        <div className="absolute bottom-8 left-0 right-0">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 flex items-center justify-between">
             <div className="flex items-center gap-2">
               {HERO_SLIDES.map((slide, idx) => (
                 <button
                   key={slide.id}
                   onClick={() => setHeroAtivo(idx)}
                   className={`h-2.5 rounded-full transition-all ${
-                    idx === heroAtivo ? 'w-10 bg-white' : 'w-2.5 bg-white/60'
+                    idx === heroAtivo ? 'w-10 bg-white' : 'w-2.5 bg-white/70'
                   }`}
                   aria-label={`Ir para slide ${idx + 1}`}
                 />
