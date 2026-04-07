@@ -5,17 +5,17 @@ const planos = [
   {
     nome: 'Mensal',
     resumo: '4 horas/mês de suporte técnico',
-    preco: 'R$ 480/mês',
+    preco: 'R$ 400,00/mês',
   },
   {
     nome: 'Semestral',
     resumo: '24 horas de suporte (6 meses)',
-    preco: 'R$ 2.760',
+    preco: 'R$ 2.160,00',
   },
   {
     nome: 'Anual',
     resumo: '48 horas de suporte (12 meses)',
-    preco: 'R$ 5.280',
+    preco: 'R$ 3.990,00',
   },
 ]
 
@@ -63,7 +63,7 @@ export default function LandingPage() {
             <p className="text-sm uppercase tracking-wide text-blue-100">Licença de Suporte do Desenvolvedor</p>
             <h2 className="mt-2 text-2xl font-bold">MVP de suporte técnico e correções</h2>
             <p className="mt-3 text-blue-100">
-              Base de cobrança: R$ 120/h com mínimo de 4 horas por ciclo (R$ 480).
+              Planos comerciais definidos para contratação mensal, semestral ou anual.
             </p>
             <ul className="mt-4 space-y-2 text-sm text-blue-50">
               <li className="flex items-center gap-2">
@@ -92,3 +92,4 @@ export default function LandingPage() {
     </div>
   )
 }
+
