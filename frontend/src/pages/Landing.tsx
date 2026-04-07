@@ -107,6 +107,7 @@ function abrirWhatsapp(telefone: string, mensagem: string) {
 export default function LandingPage() {
   const [menuMobile, setMenuMobile] = useState(false)
   const [headerSolid, setHeaderSolid] = useState(false)
+  const [secaoAtiva, setSecaoAtiva] = useState('inicio')
   const [vendedores, setVendedores] = useState<PublicVendedor[]>([])
   const [carregandoVendedores, setCarregandoVendedores] = useState(true)
   const [heroAtivo, setHeroAtivo] = useState(0)
@@ -125,6 +126,27 @@ export default function LandingPage() {
     const onScroll = () => setHeaderSolid(window.scrollY > 12)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    const sections = MENU_ITEMS
+      .map((item) => document.getElementById(item.id))
+      .filter((node): node is HTMLElement => Boolean(node))
+
+    if (!sections.length) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visivel = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
+        if (visivel?.target?.id) setSecaoAtiva(visivel.target.id)
+      },
+      { rootMargin: '-35% 0px -50% 0px', threshold: [0.2, 0.4, 0.6] }
+    )
+
+    sections.forEach((section) => observer.observe(section))
+    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
@@ -159,6 +181,7 @@ export default function LandingPage() {
   const rolarPara = (id: string) => {
     const section = document.getElementById(id)
     if (!section) return
+    setSecaoAtiva(id)
     section.scrollIntoView({ behavior: 'smooth', block: 'start' })
     setMenuMobile(false)
   }
@@ -230,14 +253,27 @@ export default function LandingPage() {
               </div>
             </button>
 
-            <nav className="hidden lg:flex items-center gap-6">
+            <nav className="hidden lg:flex items-center gap-2">
               {MENU_ITEMS.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => rolarPara(item.id)}
-                  className="text-sm font-medium text-slate-700 hover:text-[#1B4F8C] transition-colors"
+                  className={`relative px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
+                    headerSolid
+                      ? secaoAtiva === item.id
+                        ? 'text-[#1B4F8C] bg-blue-50'
+                        : 'text-slate-700 hover:text-[#1B4F8C] hover:bg-slate-100'
+                      : secaoAtiva === item.id
+                        ? 'text-white bg-white/20'
+                        : 'text-white/90 hover:text-white hover:bg-white/10'
+                  } hover:-translate-y-0.5`}
                 >
                   {item.label}
+                  <span
+                    className={`absolute left-3 right-3 -bottom-0.5 h-0.5 rounded-full transition-all duration-300 ${
+                      secaoAtiva === item.id ? 'bg-current opacity-100' : 'opacity-0'
+                    }`}
+                  />
                 </button>
               ))}
             </nav>
@@ -291,16 +327,16 @@ export default function LandingPage() {
         ))}
         <div className="absolute inset-0 bg-black/35" />
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 h-full flex items-center">
-          <div className="max-w-2xl text-white py-10">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 h-full min-h-[calc(78vh-5rem)] lg:min-h-[calc(85vh-5rem)] flex items-center">
+          <div className="max-w-xl text-white py-10 text-left">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/20 border border-white/40 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
               <UserRound className="w-4 h-4" />
               {HERO_SLIDES[heroAtivo].badge}
             </span>
-            <h1 className="mt-4 text-4xl lg:text-6xl font-extrabold leading-tight drop-shadow-sm">
+            <h1 className="mt-4 text-3xl lg:text-5xl font-extrabold leading-tight drop-shadow-sm">
               {HERO_SLIDES[heroAtivo].titulo}
             </h1>
-            <p className="mt-4 text-lg lg:text-xl text-slate-100 max-w-xl">
+            <p className="mt-4 text-base lg:text-lg text-slate-100 max-w-xl">
               {HERO_SLIDES[heroAtivo].descricao}
             </p>
             <button
@@ -312,8 +348,27 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="absolute bottom-8 left-0 right-0">
+        <div className="absolute inset-y-0 left-0 right-0 pointer-events-none">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 flex items-center justify-between">
+            <button
+              onClick={anteriorHero}
+              className="pointer-events-auto p-2.5 rounded-full border border-white/50 text-white hover:bg-white/20 transition-colors"
+              aria-label="Slide anterior"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              onClick={proximoHero}
+              className="pointer-events-auto p-2.5 rounded-full border border-white/50 text-white hover:bg-white/20 transition-colors"
+              aria-label="Proximo slide"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="absolute bottom-8 left-0 right-0">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 flex items-center justify-start">
             <div className="flex items-center gap-2">
               {HERO_SLIDES.map((slide, idx) => (
                 <button
@@ -325,22 +380,6 @@ export default function LandingPage() {
                   aria-label={`Ir para slide ${idx + 1}`}
                 />
               ))}
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={anteriorHero}
-                className="p-2 rounded-full border border-white/50 text-white hover:bg-white/20 transition-colors"
-                aria-label="Slide anterior"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button
-                onClick={proximoHero}
-                className="p-2 rounded-full border border-white/50 text-white hover:bg-white/20 transition-colors"
-                aria-label="Proximo slide"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
             </div>
           </div>
         </div>
