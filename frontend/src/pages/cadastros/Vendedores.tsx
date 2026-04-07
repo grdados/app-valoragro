@@ -76,25 +76,26 @@ export default function VendedoresPage() {
       if (editing) {
         const res = await vendedoresApi.update(editing.id, data)
         saved = res.data
-        toast.success('Vendedor atualizado!')
       } else {
         const res = await vendedoresApi.create(data)
         saved = res.data
-        toast.success('Vendedor criado!')
       }
 
       if (fotoFile && saved?.id) {
         await vendedoresApi.uploadFoto(saved.id, fotoFile)
       }
 
+      toast.success(editing ? 'Vendedor atualizado!' : 'Vendedor criado!')
+
       setModalOpen(false)
       setFotoFile(null)
       setFotoPreview('')
       fetchData()
     } catch (err: unknown) {
-      const error = err as { response?: { data?: Record<string, string[]> } }
-      const msg = Object.values(error?.response?.data || {}).flat()[0] || 'Erro ao salvar'
-      toast.error(String(msg))
+      const error = err as { response?: { data?: { detail?: string } & Record<string, string[]> } }
+      const detail = error?.response?.data?.detail
+      const firstField = Object.values(error?.response?.data || {}).flat?.()[0]
+      toast.error(String(detail || firstField || 'Erro ao salvar vendedor/foto'))
     } finally { setSaving(false) }
   }
 
