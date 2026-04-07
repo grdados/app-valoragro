@@ -8,7 +8,6 @@ import {
   ChevronRight,
   Handshake,
   Home,
-  KeyRound,
   Mail,
   MapPin,
   Menu,
@@ -17,7 +16,6 @@ import {
   ShieldCheck,
   Truck,
   UserRound,
-  Wrench,
   X,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -53,13 +51,6 @@ const MENU_ITEMS = [
   { id: 'sobre', label: 'Sobre' },
   { id: 'localizacao', label: 'Localizacao' },
   { id: 'contato', label: 'Contato' },
-  { id: 'desenvolvedor', label: 'Desenvolvedor' },
-]
-
-const PLANOS = [
-  { nome: 'Mensal', valor: 'R$ 400,00', detalhe: 'Suporte recorrente para operacao continua.' },
-  { nome: 'Semestral', valor: 'R$ 2.160,00', detalhe: 'Pacote para previsibilidade de 6 meses.' },
-  { nome: 'Anual', valor: 'R$ 3.990,00', detalhe: 'Melhor custo para evolucao de longo prazo.' },
 ]
 
 const PRODUTOS = [
@@ -636,33 +627,6 @@ export default function LandingPage() {
               </button>
             </div>
           </form>
-        </div>
-      </section>
-
-      <section id="desenvolvedor" className="py-16 bg-slate-900 text-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="max-w-3xl">
-            <p className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-blue-200">
-              <Wrench className="w-4 h-4" /> Sessao do Desenvolvedor
-            </p>
-            <h2 className="mt-3 text-3xl font-extrabold">Licenca de suporte tecnico e evolucao</h2>
-            <p className="mt-3 text-slate-300">
-              Escopo MVP: manutencao corretiva, suporte operacional e pequenas melhorias evolutivas.
-            </p>
-          </div>
-          <div className="mt-6 grid md:grid-cols-3 gap-4">
-            {PLANOS.map((plano) => (
-              <article key={plano.nome} className="rounded-xl border border-white/15 bg-white/5 p-5">
-                <p className="text-sm text-blue-200">{plano.nome}</p>
-                <p className="mt-1 text-2xl font-bold">{plano.valor}</p>
-                <p className="mt-2 text-sm text-slate-300">{plano.detalhe}</p>
-              </article>
-            ))}
-          </div>
-          <div className="mt-6 text-sm text-slate-300 flex items-center gap-2">
-            <KeyRound className="w-4 h-4 text-blue-300" />
-            Integracao de cobranca Asaas (PIX/Boleto) e liberacao automatica de licenca na proxima fase.
-          </div>
         </div>
       </section>
 
