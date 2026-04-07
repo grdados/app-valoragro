@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ChangeEvent } from 'react'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { vendedoresApi, coordenadoresApi } from '../../services/api'
 import PageHeader from '../../components/PageHeader'
@@ -18,7 +18,6 @@ interface FormData {
   cpf: string
   email: string
   telefone: string
-  foto: string
   cidade: string
   uf: string
   ativo: boolean
@@ -32,6 +31,8 @@ export default function VendedoresPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Vendedor | null>(null)
   const [saving, setSaving] = useState(false)
+  const [fotoFile, setFotoFile] = useState<File | null>(null)
+  const [fotoPreview, setFotoPreview] = useState<string>('')
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>()
 
   const fetchData = async () => {
@@ -50,24 +51,45 @@ export default function VendedoresPage() {
 
   const openCreate = () => {
     setEditing(null)
-    // Pre-fill coordenador for coordenador user
+    setFotoFile(null)
+    setFotoPreview('')
     const defaultCoord = isCoordenador() && coordenadores.length > 0 ? coordenadores[0].id : undefined
     reset({ ativo: true, coordenador: defaultCoord })
     setModalOpen(true)
   }
 
-  const openEdit = (item: Vendedor) => { setEditing(item); reset(item); setModalOpen(true) }
+  const openEdit = (item: Vendedor) => {
+    setEditing(item)
+    setFotoFile(null)
+    setFotoPreview(item.foto || '')
+    reset(item)
+    setModalOpen(true)
+  }
 
   const onSubmit = async (data: FormData) => {
     setSaving(true)
-    // If coordenador user and no coordenador selected, use their own
     if (isCoordenador() && !data.coordenador && coordenadores.length > 0) {
       data.coordenador = coordenadores[0].id
     }
     try {
-      if (editing) { await vendedoresApi.update(editing.id, data); toast.success('Vendedor atualizado!') }
-      else { await vendedoresApi.create(data); toast.success('Vendedor criado!') }
+      let saved: Vendedor
+      if (editing) {
+        const res = await vendedoresApi.update(editing.id, data)
+        saved = res.data
+        toast.success('Vendedor atualizado!')
+      } else {
+        const res = await vendedoresApi.create(data)
+        saved = res.data
+        toast.success('Vendedor criado!')
+      }
+
+      if (fotoFile && saved?.id) {
+        await vendedoresApi.uploadFoto(saved.id, fotoFile)
+      }
+
       setModalOpen(false)
+      setFotoFile(null)
+      setFotoPreview('')
       fetchData()
     } catch (err: unknown) {
       const error = err as { response?: { data?: Record<string, string[]> } }
@@ -80,6 +102,18 @@ export default function VendedoresPage() {
     if (!confirm(`Remover ${item.nome}?`)) return
     try { await vendedoresApi.remove(item.id); toast.success('Removido!'); fetchData() }
     catch { toast.error('Erro ao remover') }
+  }
+
+  const handleFotoChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null
+    setFotoFile(file)
+    if (!file) {
+      setFotoPreview(editing?.foto || '')
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => setFotoPreview(String(reader.result || ''))
+    reader.readAsDataURL(file)
   }
 
   const columns = [
@@ -177,8 +211,18 @@ export default function VendedoresPage() {
               </select>
             </div>
             <div className="col-span-2">
-              <label className="label">URL da Foto</label>
-              <input {...register('foto')} className="input" placeholder="https://... ou deixe em branco para foto padrão" />
+              <label className="label">Foto do Vendedor</label>
+              <input type="file" accept="image/*" className="input" onChange={handleFotoChange} />
+              <p className="text-xs text-gray-500 mt-1">Formatos aceitos: JPG, PNG ou WEBP (máx. 5MB).</p>
+              <div className="mt-3 flex items-center gap-3">
+                <img
+                  src={fotoPreview || editing?.foto || '/media/vendedores/default.png'}
+                  alt="Preview"
+                  className="w-14 h-14 rounded-full object-cover bg-gray-200 border"
+                  onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(editing?.nome || 'Vendedor') + '&background=1B4F8C&color=fff&size=56' }}
+                />
+                <span className="text-sm text-gray-600">{fotoFile ? fotoFile.name : 'Foto atual'}</span>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2">

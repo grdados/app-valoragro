@@ -2,6 +2,10 @@ from rest_framework import viewsets, permissions
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.conf import settings
+from django.core.files.storage import default_storage
+from uuid import uuid4
+from pathlib import Path
 from apps.accounts.permissions import IsAdmin, IsSupervisorOrAbove, IsAdminOrCoordenador
 from .models import Supervisor, Cliente, Coordenador, Vendedor, TipoBem, COBAN, Consorcio, FaixaComissao, Assembleia
 from .serializers import (
@@ -98,9 +102,30 @@ class VendedorViewSet(viewsets.ModelViewSet):
         return qs
 
     def get_permissions(self):
-        if self.action in ("create", "update", "partial_update", "destroy"):
+        if self.action in ("create", "update", "partial_update", "destroy", "upload_foto"):
             return [permissions.IsAuthenticated(), IsAdminOrCoordenador()]
         return [permissions.IsAuthenticated()]
+
+    @action(detail=True, methods=["post"], url_path="upload-foto")
+    def upload_foto(self, request, pk=None):
+        vendedor = self.get_object()
+        arquivo = request.FILES.get("foto")
+        if not arquivo:
+            return Response({"detail": "Arquivo de foto não enviado."}, status=400)
+
+        content_type = getattr(arquivo, "content_type", "") or ""
+        if not content_type.startswith("image/"):
+            return Response({"detail": "Envie um arquivo de imagem válido."}, status=400)
+
+        if arquivo.size > 5 * 1024 * 1024:
+            return Response({"detail": "A imagem deve ter no máximo 5MB."}, status=400)
+
+        ext = Path(arquivo.name).suffix.lower() or ".jpg"
+        nome_arquivo = f"vendedores/{uuid4().hex}{ext}"
+        caminho_salvo = default_storage.save(nome_arquivo, arquivo)
+        vendedor.foto = f"{settings.MEDIA_URL}{caminho_salvo}".replace("//", "/")
+        vendedor.save(update_fields=["foto"])
+        return Response({"foto": vendedor.foto})
 
 
 class TipoBemViewSet(viewsets.ModelViewSet):

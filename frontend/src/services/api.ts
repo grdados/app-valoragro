@@ -78,6 +78,13 @@ export const vendedoresApi = {
   create: (data: ApiPayload) => api.post('/vendedores/', data),
   update: (id: number, data: ApiPayload) => api.put(`/vendedores/${id}/`, data),
   remove: (id: number) => api.delete(`/vendedores/${id}/`),
+  uploadFoto: (id: number, foto: File) => {
+    const formData = new FormData()
+    formData.append('foto', foto)
+    return api.post(`/vendedores/${id}/upload-foto/`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
 }
 
 export const publicApi = {
