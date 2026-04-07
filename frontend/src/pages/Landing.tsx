@@ -4,6 +4,8 @@ import {
   Bike,
   Building2,
   Car,
+  ChevronLeft,
+  ChevronRight,
   Handshake,
   Home,
   KeyRound,
@@ -69,6 +71,27 @@ const PRODUTOS = [
   { nome: 'Servicos', descricao: 'Projetos e despesas de alto valor.', icon: Handshake },
 ]
 
+const HERO_SLIDES = [
+  {
+    id: 'pf',
+    segmento: 'pf' as Segmento,
+    titulo: 'Consorcio para Pessoa Fisica com planejamento e atendimento humano.',
+    descricao: 'Organize sua conquista com simulacao orientada para imovel, carro, moto e servicos.',
+    imagem: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1400&q=80',
+    bg: 'from-blue-900 via-[#1B4F8C] to-cyan-700',
+    badge: 'Pessoa Fisica',
+  },
+  {
+    id: 'pj',
+    segmento: 'pj' as Segmento,
+    titulo: 'Consorcio para Pessoa Juridica com foco em crescimento e previsibilidade.',
+    descricao: 'Apoio comercial para renovacao de frota, ativos estrategicos e servicos empresariais.',
+    imagem: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1400&q=80',
+    bg: 'from-emerald-900 via-emerald-700 to-teal-600',
+    badge: 'Pessoa Juridica',
+  },
+]
+
 function normalizarTelefone(valor: string) {
   return valor.replace(/\D/g, '')
 }
@@ -86,6 +109,7 @@ export default function LandingPage() {
   const [headerSolid, setHeaderSolid] = useState(false)
   const [vendedores, setVendedores] = useState<PublicVendedor[]>([])
   const [carregandoVendedores, setCarregandoVendedores] = useState(true)
+  const [heroAtivo, setHeroAtivo] = useState(0)
   const contatoRef = useRef<HTMLElement | null>(null)
   const [lead, setLead] = useState<LeadForm>({
     nome: '',
@@ -101,6 +125,13 @@ export default function LandingPage() {
     const onScroll = () => setHeaderSolid(window.scrollY > 12)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setHeroAtivo((atual) => (atual + 1) % HERO_SLIDES.length)
+    }, 6000)
+    return () => window.clearInterval(timer)
   }, [])
 
   useEffect(() => {
@@ -172,6 +203,14 @@ export default function LandingPage() {
     toast.success('Abrindo conversa com o especialista selecionado.')
   }
 
+  const proximoHero = () => {
+    setHeroAtivo((atual) => (atual + 1) % HERO_SLIDES.length)
+  }
+
+  const anteriorHero = () => {
+    setHeroAtivo((atual) => (atual - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header
@@ -240,55 +279,80 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <section
-        id="inicio"
-        className="pt-24 pb-14 bg-[radial-gradient(circle_at_20%_20%,#dbeafe,transparent_45%),radial-gradient(circle_at_80%_0%,#bfdbfe,transparent_35%),#f8fafc]"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            <article className="card overflow-hidden border-0 shadow-xl bg-white">
-              <img
-                src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80"
-                alt="Consorcio para pessoa fisica"
-                className="h-56 w-full object-cover"
-              />
-              <div className="p-6">
-                <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 text-[#1B4F8C] px-3 py-1 text-xs font-semibold">
-                  <UserRound className="w-4 h-4" /> Pessoa Fisica
-                </span>
-                <h1 className="mt-3 text-2xl font-extrabold leading-tight">
-                  Planeje seu proximo consorcio com seguranca e suporte especializado.
-                </h1>
-                <p className="mt-2 text-slate-600">
-                  Simule imovel, veiculo ou servico com acompanhamento de um especialista.
-                </p>
-                <button className="btn-primary mt-5" onClick={() => irParaSimulacao('pf')}>
-                  Simular Agora
-                </button>
-              </div>
-            </article>
+      <section id="inicio" className="relative pt-24 pb-16 overflow-hidden">
+        {HERO_SLIDES.map((slide, idx) => (
+          <div
+            key={slide.id}
+            className={`absolute inset-0 transition-opacity duration-700 bg-gradient-to-br ${slide.bg} ${
+              idx === heroAtivo ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+        ))}
+        <div className="absolute inset-0 bg-black/30" />
 
-            <article className="card overflow-hidden border-0 shadow-xl bg-white">
-              <img
-                src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1200&q=80"
-                alt="Consorcio para pessoa juridica"
-                className="h-56 w-full object-cover"
-              />
-              <div className="p-6">
-                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
-                  <Building2 className="w-4 h-4" /> Pessoa Juridica
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="card border-0 bg-white/95 backdrop-blur-md shadow-2xl overflow-hidden">
+            <div className="grid lg:grid-cols-2">
+              <div className="p-8 lg:p-12">
+                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 text-[#1B4F8C] px-3 py-1 text-xs font-semibold">
+                  <UserRound className="w-4 h-4" />
+                  {HERO_SLIDES[heroAtivo].badge}
                 </span>
-                <h2 className="mt-3 text-2xl font-extrabold leading-tight">
-                  Solucoes para crescimento empresarial com previsibilidade financeira.
-                </h2>
-                <p className="mt-2 text-slate-600">
-                  Estruture a renovacao de frota, bens e servicos com atendimento consultivo.
-                </p>
-                <button className="btn-success mt-5" onClick={() => irParaSimulacao('pj')}>
+                <h1 className="mt-4 text-3xl lg:text-4xl font-extrabold leading-tight text-slate-900">
+                  {HERO_SLIDES[heroAtivo].titulo}
+                </h1>
+                <p className="mt-3 text-slate-600 text-lg">{HERO_SLIDES[heroAtivo].descricao}</p>
+                <button
+                  className="btn-primary mt-6"
+                  onClick={() => irParaSimulacao(HERO_SLIDES[heroAtivo].segmento)}
+                >
                   Simular Agora
                 </button>
               </div>
-            </article>
+              <div className="relative min-h-[280px] lg:min-h-[420px]">
+                {HERO_SLIDES.map((slide, idx) => (
+                  <img
+                    key={slide.id}
+                    src={slide.imagem}
+                    alt={slide.badge}
+                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+                      idx === heroAtivo ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {HERO_SLIDES.map((slide, idx) => (
+                <button
+                  key={slide.id}
+                  onClick={() => setHeroAtivo(idx)}
+                  className={`h-2.5 rounded-full transition-all ${
+                    idx === heroAtivo ? 'w-10 bg-white' : 'w-2.5 bg-white/60'
+                  }`}
+                  aria-label={`Ir para slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={anteriorHero}
+                className="p-2 rounded-full border border-white/50 text-white hover:bg-white/20 transition-colors"
+                aria-label="Slide anterior"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={proximoHero}
+                className="p-2 rounded-full border border-white/50 text-white hover:bg-white/20 transition-colors"
+                aria-label="Proximo slide"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
       </section>
