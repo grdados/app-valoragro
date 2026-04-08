@@ -846,7 +846,7 @@ export default function LandingPage() {
             <p className="mt-1 text-sm flex items-center gap-2"><MapPin className="w-4 h-4" /> {localLabel}</p>
           </div>
         </div>
-        <div className="border-t border-white/10 bg-[#121a18] py-4 text-xs text-slate-400">
+        <div className="border-t border-white/10 bg-[#202120] py-4 text-xs text-slate-400">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 grid items-center gap-3 md:grid-cols-3">
             <p className="text-left">
               © {new Date().getFullYear()} Valor Agro. Todos os direitos reservados.
