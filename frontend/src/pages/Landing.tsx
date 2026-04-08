@@ -69,7 +69,7 @@ const HERO_SLIDES = [
     titulo: 'Consorcio para Pessoa Fisica com planejamento e atendimento humano.',
     descricao: 'Organize sua conquista com simulacao orientada para imovel, carro, moto e servicos.',
     imagem: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1400&q=80',
-    bg: 'from-blue-900 via-[#1B4F8C] to-cyan-700',
+    bg: 'from-black via-[#0b1a0f] to-[#143420]',
     badge: 'Pessoa Fisica',
   },
   {
@@ -78,10 +78,12 @@ const HERO_SLIDES = [
     titulo: 'Consorcio para Pessoa Juridica com foco em crescimento e previsibilidade.',
     descricao: 'Apoio comercial para renovacao de frota, ativos estrategicos e servicos empresariais.',
     imagem: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1400&q=80',
-    bg: 'from-emerald-900 via-emerald-700 to-teal-600',
+    bg: 'from-black via-[#101910] to-[#1e4a2d]',
     badge: 'Pessoa Juridica',
   },
 ]
+
+const LOGO_URL = '/brand/logo-valor-agro.jpg'
 
 function normalizarTelefone(valor: string) {
   return valor.replace(/\D/g, '')
@@ -226,22 +228,20 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-[#f4f8f2] text-slate-900">
       <header
         className={`fixed top-0 z-50 w-full transition-all duration-300 ${
-          headerSolid ? 'bg-white/95 shadow-sm backdrop-blur border-b border-slate-200' : 'bg-transparent'
+          headerSolid ? 'bg-[#060a07]/95 shadow-sm backdrop-blur border-b border-white/10' : 'bg-transparent'
         }`}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="h-16 flex items-center justify-between">
             <button onClick={() => rolarPara('inicio')} className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-[#1B4F8C] text-white flex items-center justify-center">
-                <BarChart3 className="w-5 h-5" />
-              </div>
-              <div className="text-left">
-                <p className="font-bold leading-none">Valor Agro</p>
-                <p className="text-xs text-slate-500">Consorcios BB</p>
-              </div>
+              <img
+                src={LOGO_URL}
+                alt="Valor Agro"
+                className="h-10 w-auto rounded-md object-contain shadow-sm ring-1 ring-white/20"
+              />
             </button>
 
             <nav className="hidden lg:flex items-center gap-2">
@@ -252,10 +252,10 @@ export default function LandingPage() {
                   className={`relative px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
                     headerSolid
                       ? secaoAtiva === item.id
-                        ? 'text-[#1B4F8C] bg-blue-50'
-                        : 'text-slate-700 hover:text-[#1B4F8C] hover:bg-slate-100'
+                        ? 'text-[#7BEA63] bg-[#132117]'
+                        : 'text-slate-200 hover:text-[#7BEA63] hover:bg-white/10'
                       : secaoAtiva === item.id
-                        ? 'text-white bg-white/20'
+                        ? 'text-white bg-[#7BEA63]/20'
                         : 'text-white/90 hover:text-white hover:bg-white/10'
                   } hover:-translate-y-0.5`}
                 >
@@ -270,11 +270,11 @@ export default function LandingPage() {
             </nav>
 
             <div className="flex items-center gap-2">
-              <Link to="/login" className="btn-primary hidden sm:inline-flex">
+              <Link to="/login" className="btn hidden sm:inline-flex bg-[#66e24d] text-[#041109] hover:bg-[#7bea63] font-semibold">
                 Entrar no Painel
               </Link>
               <button
-                className="lg:hidden p-2 rounded-lg border border-slate-300 bg-white"
+                className="lg:hidden p-2 rounded-lg border border-white/20 bg-[#0f1a12] text-white"
                 onClick={() => setMenuMobile((v) => !v)}
                 aria-label="Abrir menu"
               >
@@ -293,12 +293,12 @@ export default function LandingPage() {
                 <button
                   key={item.id}
                   onClick={() => rolarPara(item.id)}
-                  className="text-left px-3 py-2 rounded-lg hover:bg-slate-100"
+                  className="text-left px-3 py-2 rounded-lg bg-white/5 text-white hover:bg-white/10"
                 >
                   {item.label}
                 </button>
               ))}
-              <Link to="/login" className="btn-primary justify-center mt-1">
+              <Link to="/login" className="btn justify-center mt-1 bg-[#66e24d] text-[#041109] hover:bg-[#7bea63] font-semibold">
                 Entrar no Painel
               </Link>
             </div>
@@ -331,7 +331,7 @@ export default function LandingPage() {
               {HERO_SLIDES[heroAtivo].descricao}
             </p>
             <button
-              className="btn-primary mt-6 bg-white text-[#1B4F8C] hover:bg-slate-100"
+              className="btn mt-6 bg-[#66e24d] text-[#041109] hover:bg-[#7bea63] font-semibold"
               onClick={() => irParaSimulacao(HERO_SLIDES[heroAtivo].segmento)}
             >
               Simular Agora
@@ -366,7 +366,7 @@ export default function LandingPage() {
                   key={slide.id}
                   onClick={() => setHeroAtivo(idx)}
                   className={`h-2.5 rounded-full transition-all ${
-                    idx === heroAtivo ? 'w-10 bg-white' : 'w-2.5 bg-white/70'
+                    idx === heroAtivo ? 'w-10 bg-[#66e24d]' : 'w-2.5 bg-white/70'
                   }`}
                   aria-label={`Ir para slide ${idx + 1}`}
                 />
@@ -376,7 +376,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="produtos" className="py-16 bg-white">
+      <section id="produtos" className="py-16 bg-[#f8fbf7]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto">
             <h2 className="text-3xl font-extrabold">Produtos</h2>
@@ -391,7 +391,7 @@ export default function LandingPage() {
                   className="card p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
                   style={{ animationDelay: `${idx * 60}ms` }}
                 >
-                  <div className="w-11 h-11 rounded-lg bg-slate-100 text-[#1B4F8C] flex items-center justify-center">
+                  <div className="w-11 h-11 rounded-lg bg-[#e9f9e3] text-[#1d7a34] flex items-center justify-center">
                     <Icon className="w-5 h-5" />
                   </div>
                   <h3 className="mt-4 text-lg font-bold">{produto.nome}</h3>
@@ -403,7 +403,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="especialista" className="py-16 bg-slate-100">
+      <section id="especialista" className="py-16 bg-[#edf4eb]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto">
             <h2 className="text-3xl font-extrabold">Falar com Especialista</h2>
@@ -436,7 +436,7 @@ export default function LandingPage() {
                   <p className="text-sm text-slate-600">{vendedor.cidade || 'Cidade nao informada'}{vendedor.uf ? ` - ${vendedor.uf}` : ''}</p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <button
-                      className="btn-success"
+                      className="btn bg-[#1f8c3b] text-white hover:bg-[#1a7531]"
                       onClick={() =>
                         abrirWhatsapp(
                           vendedor.telefone,
@@ -467,17 +467,17 @@ export default function LandingPage() {
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 text-sm">
-                <ShieldCheck className="w-4 h-4 text-[#1B4F8C]" /> Processo estruturado
+                <ShieldCheck className="w-4 h-4 text-[#1f8c3b]" /> Processo estruturado
               </span>
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 text-sm">
-                <Handshake className="w-4 h-4 text-[#1B4F8C]" /> Atendimento consultivo
+                <Handshake className="w-4 h-4 text-[#1f8c3b]" /> Atendimento consultivo
               </span>
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 text-sm">
-                <BarChart3 className="w-4 h-4 text-[#1B4F8C]" /> Gestao orientada a dados
+                <BarChart3 className="w-4 h-4 text-[#1f8c3b]" /> Gestao orientada a dados
               </span>
             </div>
           </div>
-          <div className="card p-6 bg-[linear-gradient(135deg,#1B4F8C,#1d3461)] text-white border-0">
+          <div className="card p-6 bg-[linear-gradient(135deg,#050806,#153121)] text-white border-0">
             <h3 className="text-xl font-bold">Compromisso</h3>
             <p className="mt-2 text-blue-100">
               Entregar suporte rapido, simulacoes assertivas e visao completa para sua equipe comercial.
@@ -500,7 +500,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="localizacao" className="py-16 bg-slate-100">
+      <section id="localizacao" className="py-16 bg-[#edf4eb]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 grid lg:grid-cols-2 gap-6">
           <div className="card p-6">
             <h2 className="text-3xl font-extrabold">Localizacao</h2>
@@ -508,9 +508,9 @@ export default function LandingPage() {
               Atendimento digital para todo Brasil com base de operacao em Mato Grosso.
             </p>
             <div className="mt-4 space-y-2 text-sm text-slate-700">
-              <p className="flex items-center gap-2"><MapPin className="w-4 h-4 text-[#1B4F8C]" /> Cuiaba - MT</p>
-              <p className="flex items-center gap-2"><Phone className="w-4 h-4 text-[#1B4F8C]" /> +55 (65) 0000-0000</p>
-              <p className="flex items-center gap-2"><Mail className="w-4 h-4 text-[#1B4F8C]" /> contato@valoragro.com.br</p>
+              <p className="flex items-center gap-2"><MapPin className="w-4 h-4 text-[#1f8c3b]" /> Cuiaba - MT</p>
+              <p className="flex items-center gap-2"><Phone className="w-4 h-4 text-[#1f8c3b]" /> +55 (65) 0000-0000</p>
+              <p className="flex items-center gap-2"><Mail className="w-4 h-4 text-[#1f8c3b]" /> contato@valoragro.com.br</p>
             </div>
           </div>
           <div className="card overflow-hidden min-h-[280px]">
@@ -566,14 +566,14 @@ export default function LandingPage() {
                 <button
                   type="button"
                   onClick={() => setLead((prev) => ({ ...prev, tipoPessoa: 'pf' }))}
-                  className={`btn ${lead.tipoPessoa === 'pf' ? 'bg-[#1B4F8C] text-white' : 'bg-white border border-slate-300'}`}
+                  className={`btn ${lead.tipoPessoa === 'pf' ? 'bg-[#1f8c3b] text-white' : 'bg-white border border-slate-300'}`}
                 >
                   Pessoa Fisica
                 </button>
                 <button
                   type="button"
                   onClick={() => setLead((prev) => ({ ...prev, tipoPessoa: 'pj' }))}
-                  className={`btn ${lead.tipoPessoa === 'pj' ? 'bg-[#1B4F8C] text-white' : 'bg-white border border-slate-300'}`}
+                  className={`btn ${lead.tipoPessoa === 'pj' ? 'bg-[#1f8c3b] text-white' : 'bg-white border border-slate-300'}`}
                 >
                   Pessoa Juridica
                 </button>
@@ -619,7 +619,7 @@ export default function LandingPage() {
               />
             </div>
             <div className="md:col-span-2 flex flex-wrap gap-3">
-              <button className="btn-primary" type="submit">
+              <button className="btn bg-[#1f8c3b] text-white hover:bg-[#1a7531]" type="submit">
                 <MessageCircle className="w-4 h-4" /> Simular Agora
               </button>
               <button type="button" className="btn-secondary" onClick={() => rolarPara('especialista')}>
@@ -630,10 +630,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer id="rodape" className="bg-[#0b1220] text-slate-300">
+      <footer id="rodape" className="bg-[#050806] text-slate-300">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 grid md:grid-cols-3 gap-6">
           <div>
-            <p className="font-bold text-white">Valor Agro</p>
+            <img src={LOGO_URL} alt="Valor Agro" className="h-12 w-auto rounded-md object-contain ring-1 ring-white/15" />
             <p className="text-sm mt-2">
               Plataforma para gestao de vendas e comissoes de consorcios BB, com atendimento para PF e PJ.
             </p>
