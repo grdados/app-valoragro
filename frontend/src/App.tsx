@@ -20,6 +20,8 @@ import ConsorciosPage from './pages/cadastros/Consorcios'
 import AssembleiasPage from './pages/cadastros/Assembleias'
 import FaixasPage from './pages/cadastros/Faixas'
 import UsuariosPage from './pages/cadastros/Usuarios'
+import CobansPage from './pages/cadastros/Cobans'
+import TiposBemPage from './pages/cadastros/TiposBem'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('access_token')
@@ -68,6 +70,8 @@ function AppRoutes() {
           <Route path="cadastros/vendedores" element={<VendedoresPage />} />
           <Route path="cadastros/consorcios" element={<ConsorciosPage />} />
           <Route path="cadastros/assembleias" element={<AssembleiasPage />} />
+          <Route path="cadastros/cobans" element={<CobansPage />} />
+          <Route path="cadastros/tipos-bem" element={<TiposBemPage />} />
           <Route path="cadastros/faixas" element={<FaixasPage />} />
           <Route path="cadastros/usuarios" element={<UsuariosPage />} />
         </Route>
@@ -85,6 +89,8 @@ function AppRoutes() {
         <Route path="/cadastros/vendedores" element={<Navigate to="/painel/cadastros/vendedores" replace />} />
         <Route path="/cadastros/consorcios" element={<Navigate to="/painel/cadastros/consorcios" replace />} />
         <Route path="/cadastros/assembleias" element={<Navigate to="/painel/cadastros/assembleias" replace />} />
+        <Route path="/cadastros/cobans" element={<Navigate to="/painel/cadastros/cobans" replace />} />
+        <Route path="/cadastros/tipos-bem" element={<Navigate to="/painel/cadastros/tipos-bem" replace />} />
         <Route path="/cadastros/faixas" element={<Navigate to="/painel/cadastros/faixas" replace />} />
         <Route path="/cadastros/usuarios" element={<Navigate to="/painel/cadastros/usuarios" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />

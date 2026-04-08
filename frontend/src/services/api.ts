@@ -168,6 +168,9 @@ export const tiposBemApi = {
 
 export const cobansApi = {
   list: () => api.get('/cobans/'),
+  create: (data: ApiPayload) => api.post('/cobans/', data),
+  update: (id: number, data: ApiPayload) => api.put(`/cobans/${id}/`, data),
+  remove: (id: number) => api.delete(`/cobans/${id}/`),
 }
 
 export const consorciosApi = {
