@@ -21,6 +21,11 @@ export default function ConsorciosPage() {
   const [saving, setSaving] = useState(false)
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>()
 
+  const getTipoBemDescricao = (tipoBemId: number) =>
+    tiposBem.find((t) => t.id === tipoBemId)?.descricao?.trim() ||
+    tiposBem.find((t) => t.id === tipoBemId)?.nome_display ||
+    '-'
+
   const fetch = async () => {
     setLoading(true)
     try {
@@ -60,7 +65,11 @@ export default function ConsorciosPage() {
   const columns = [
     { key: 'nome', header: 'Nome' },
     { key: 'coban_sigla', header: 'COBAN' },
-    { key: 'tipo_bem_nome', header: 'Tipo de Bem' },
+    {
+      key: 'tipo_bem_nome',
+      header: 'Tipo de Bem',
+      render: (row: Consorcio) => getTipoBemDescricao(row.tipo_bem),
+    },
     { key: 'vigencia_inicio', header: 'Início Vigência', render: (row: Consorcio) => formatDate(row.vigencia_inicio) },
     { key: 'vigencia_fim', header: 'Fim Vigência', render: (row: Consorcio) => formatDate(row.vigencia_fim) },
     { key: 'qtd_parcelas', header: 'Parcelas' },
@@ -93,7 +102,11 @@ export default function ConsorciosPage() {
               <label className="label">Tipo de Bem *</label>
               <select {...register('tipo_bem', { required: true })} className="input">
                 <option value="">Selecione</option>
-                {tiposBem.map((t) => <option key={t.id} value={t.id}>{t.nome_display}</option>)}
+                {tiposBem.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.descricao?.trim() || t.nome_display}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
