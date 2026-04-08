@@ -43,6 +43,25 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Somente o Desenvolvedor pode criar usuários Admin.")
         return value
 
+    def validate(self, attrs):
+        perfil = attrs.get("perfil", getattr(self.instance, "perfil", None))
+        supervisor_ref = attrs.get("supervisor_ref", getattr(self.instance, "supervisor_ref", None))
+        coordenador_ref = attrs.get("coordenador_ref", getattr(self.instance, "coordenador_ref", None))
+
+        errors = {}
+        if perfil == "supervisor" and not supervisor_ref:
+            errors["supervisor_ref"] = "Usuario supervisor deve estar vinculado a um supervisor."
+
+        if perfil == "coordenador":
+            if not coordenador_ref:
+                errors["coordenador_ref"] = "Usuario coordenador deve estar vinculado a um coordenador."
+            elif not coordenador_ref.supervisor_id:
+                errors["coordenador_ref"] = "O coordenador selecionado nao esta vinculado a um supervisor."
+
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
+
     def create(self, validated_data):
         password = validated_data.pop("password", None)
         user = User(**validated_data)

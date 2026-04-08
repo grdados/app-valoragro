@@ -51,6 +51,15 @@ export default function UsuariosPage() {
   const onSubmit = async (data: FormData) => {
     setSaving(true)
     try {
+      if (data.perfil === 'supervisor' && !data.supervisor_ref) {
+        toast.error('Selecione o supervisor vinculado para este usuÃ¡rio.')
+        return
+      }
+      if (data.perfil === 'coordenador' && !data.coordenador_ref) {
+        toast.error('Selecione o coordenador vinculado para este usuÃ¡rio.')
+        return
+      }
+
       const payload: Record<string, unknown> = { ...data }
       if (!data.password) delete payload.password
       if (data.perfil !== 'supervisor') payload.supervisor_ref = null
@@ -125,20 +134,22 @@ export default function UsuariosPage() {
           </div>
           {perfilWatch === 'supervisor' && (
             <div>
-              <label className="label">Vincular ao Supervisor</label>
-              <select {...register('supervisor_ref')} className="input">
+              <label className="label">Vincular ao Supervisor *</label>
+              <select {...register('supervisor_ref', { required: true })} className="input">
                 <option value="">Nenhum</option>
                 {supervisores.map((s) => <option key={s.id} value={s.id}>{s.nome}</option>)}
               </select>
+              {errors.supervisor_ref && <p className="text-red-500 text-xs mt-1">ObrigatÃ³rio</p>}
             </div>
           )}
           {perfilWatch === 'coordenador' && (
             <div>
-              <label className="label">Vincular ao Coordenador</label>
-              <select {...register('coordenador_ref')} className="input">
+              <label className="label">Vincular ao Cadastro de Coordenador *</label>
+              <select {...register('coordenador_ref', { required: true })} className="input">
                 <option value="">Nenhum</option>
                 {coordenadores.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
               </select>
+              {errors.coordenador_ref && <p className="text-red-500 text-xs mt-1">ObrigatÃ³rio</p>}
             </div>
           )}
           {perfilWatch === 'vendedor' && (

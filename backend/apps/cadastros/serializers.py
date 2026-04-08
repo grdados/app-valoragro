@@ -41,6 +41,14 @@ class CoordenadorSerializer(serializers.ModelSerializer):
     def get_total_vendedores(self, obj):
         return obj.vendedores.filter(ativo=True).count()
 
+    def validate(self, attrs):
+        supervisor = attrs.get("supervisor", getattr(self.instance, "supervisor", None))
+        if not supervisor:
+            raise serializers.ValidationError(
+                {"supervisor": "Coordenador deve estar vinculado a um supervisor."}
+            )
+        return attrs
+
 
 class VendedorSerializer(serializers.ModelSerializer):
     coordenador_nome = serializers.CharField(source="coordenador.nome", read_only=True)

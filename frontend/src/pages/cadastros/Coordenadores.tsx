@@ -79,11 +79,12 @@ export default function CoordenadoresPage() {
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Editar Coordenador' : 'Novo Coordenador'}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="label">Supervisor</label>
-            <select {...register('supervisor')} className="input">
+            <label className="label">Supervisor *</label>
+            <select {...register('supervisor', { required: true })} className="input">
               <option value="">Selecione um supervisor</option>
               {supervisores.map((s) => <option key={s.id} value={s.id}>{s.nome}</option>)}
             </select>
+            {errors.supervisor && <p className="text-red-500 text-xs mt-1">ObrigatÃ³rio</p>}
           </div>
           <div><label className="label">Nome *</label><input {...register('nome', { required: true })} className="input" />{errors.nome && <p className="text-red-500 text-xs mt-1">Obrigatório</p>}</div>
           <div><label className="label">CPF *</label><input {...register('cpf', { required: true })} className="input" placeholder="000.000.000-00" />{errors.cpf && <p className="text-red-500 text-xs mt-1">Obrigatório</p>}</div>

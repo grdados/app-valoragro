@@ -81,9 +81,8 @@ export const vendedoresApi = {
   uploadFoto: (id: number, foto: File) => {
     const formData = new FormData()
     formData.append('foto', foto)
-    const token = localStorage.getItem('access_token')
-    return axios.post(`${import.meta.env.VITE_API_URL || '/api'}/vendedores/${id}/upload-foto/`, formData, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    return api.post(`/vendedores/${id}/upload-foto/`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
 }
