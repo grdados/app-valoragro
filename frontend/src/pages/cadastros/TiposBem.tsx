@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
@@ -10,7 +10,6 @@ import Modal from '../../components/Modal'
 import type { TipoBem } from '../../types'
 
 interface FormData {
-  nome: string
   descricao: string
   ativo: boolean
 }
@@ -46,24 +45,50 @@ export default function TiposBemPage() {
 
   const openCreate = () => {
     setEditing(null)
-    reset({ ativo: true })
+    reset({ descricao: '', ativo: true })
     setModalOpen(true)
   }
 
   const openEdit = (item: TipoBem) => {
     setEditing(item)
-    reset(item)
+    reset({ descricao: item.descricao || '', ativo: item.ativo })
     setModalOpen(true)
+  }
+
+  const inferirNomePorDescricao = (descricao: string) => {
+    const normalizada = descricao
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+
+    if (normalizada.includes('imov')) return 'imoveis'
+    if (
+      normalizada.includes('movel') ||
+      normalizada.includes('carro') ||
+      normalizada.includes('moto') ||
+      normalizada.includes('veiculo')
+    ) {
+      return 'moveis'
+    }
+    return 'outros'
   }
 
   const onSubmit = async (data: FormData) => {
     setSaving(true)
     try {
+      const descricao = (data.descricao || '').trim()
+
+      const payload = {
+        ...data,
+        descricao,
+        nome: editing?.nome || inferirNomePorDescricao(descricao),
+      }
+
       if (editing) {
-        await tiposBemApi.update(editing.id, data)
+        await tiposBemApi.update(editing.id, payload)
         toast.success('Tipo de bem atualizado!')
       } else {
-        await tiposBemApi.create(data)
+        await tiposBemApi.create(payload)
         toast.success('Tipo de bem criado!')
       }
       setModalOpen(false)
@@ -141,17 +166,6 @@ export default function TiposBemPage() {
         title={editing ? 'Editar Tipo de Bem' : 'Novo Tipo de Bem'}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <label className="label">Nome *</label>
-            <select {...register('nome', { required: true })} className="input">
-              <option value="">Selecione</option>
-              <option value="imovel">Imóvel</option>
-              <option value="carro">Carro</option>
-              <option value="moto">Moto</option>
-              <option value="servico">Serviço</option>
-            </select>
-            {errors.nome && <p className="text-red-500 text-xs mt-1">Obrigatório</p>}
-          </div>
           <div>
             <label className="label">Descrição *</label>
             <input {...register('descricao', { required: true })} className="input" />
