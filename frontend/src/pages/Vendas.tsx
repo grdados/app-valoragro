@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Eye } from 'lucide-react'
+import { Plus, Eye, Trash2 } from 'lucide-react'
 import { vendasApi, comissoesApi } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
 import PageHeader from '../components/PageHeader'
@@ -24,6 +24,7 @@ const STATUS_VENDA_LABEL: Record<string, string> = {
 export default function VendasPage() {
   const { user } = useAuth()
   const canEditStatus = user?.perfil === 'dev' || user?.perfil === 'supervisor' || user?.perfil === 'coordenador'
+  const canDeleteVenda = user?.perfil === 'dev' || user?.perfil === 'supervisor'
   const [vendas, setVendas] = useState<Venda[]>([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Venda | null>(null)
@@ -86,6 +87,23 @@ export default function VendasPage() {
     }
   }
 
+  const handleDeleteVenda = async (venda: Venda) => {
+    const confirmado = confirm(`Deseja remover a venda "${venda.numero_contrato}"?`)
+    if (!confirmado) return
+    try {
+      await vendasApi.remove(venda.id)
+      toast.success('Venda removida com sucesso!')
+      if (selected?.id === venda.id) {
+        setSelected(null)
+        setParcelas([])
+      }
+      await fetchVendas()
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { detail?: string } } }
+      toast.error(error?.response?.data?.detail || 'Não foi possível remover a venda')
+    }
+  }
+
   const columns = [
     { key: 'numero_contrato', header: 'Contrato' },
     { key: 'data_venda', header: 'Data', render: (row: Venda) => formatDate(row.data_venda) },
@@ -127,10 +145,17 @@ export default function VendasPage() {
         searchFields={['numero_contrato', 'vendedor_nome', 'cliente_nome', 'consorcio_nome']}
         emptyMessage="Nenhuma venda encontrada"
         actions={(row) => (
-          <button onClick={() => openVenda(row)} className="btn-secondary py-1.5 px-3 text-xs">
-            <Eye className="w-3.5 h-3.5" />
-            Detalhes
-          </button>
+          <div className="flex items-center gap-2 justify-end">
+            {canDeleteVenda && (
+              <button onClick={() => handleDeleteVenda(row)} className="btn-danger py-1.5 px-2.5 text-xs" title="Remover venda">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+            <button onClick={() => openVenda(row)} className="btn-secondary py-1.5 px-3 text-xs">
+              <Eye className="w-3.5 h-3.5" />
+              Detalhes
+            </button>
+          </div>
         )}
       />
 
