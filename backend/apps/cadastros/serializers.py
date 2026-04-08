@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.conf import settings
 from .models import Supervisor, Cliente, Coordenador, Vendedor, TipoBem, COBAN, Consorcio, FaixaComissao, Assembleia
 
 
@@ -52,6 +53,7 @@ class CoordenadorSerializer(serializers.ModelSerializer):
 
 class VendedorSerializer(serializers.ModelSerializer):
     coordenador_nome = serializers.CharField(source="coordenador.nome", read_only=True)
+    foto = serializers.SerializerMethodField()
 
     class Meta:
         model = Vendedor
@@ -61,11 +63,52 @@ class VendedorSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "criado_em"]
 
+    def get_foto(self, obj):
+        return _resolve_foto_url(self.context, obj.foto)
+
 
 class PublicVendedorSerializer(serializers.ModelSerializer):
+    foto = serializers.SerializerMethodField()
+
     class Meta:
         model = Vendedor
         fields = ["id", "nome", "email", "telefone", "foto", "cidade", "uf"]
+
+    def get_foto(self, obj):
+        return _resolve_foto_url(self.context, obj.foto)
+
+
+def _resolve_foto_url(context, foto):
+    if not foto:
+        return ""
+
+    valor = str(foto).strip().replace("\\", "/")
+    if not valor:
+        return ""
+    if valor.startswith("http://") or valor.startswith("https://"):
+        return valor
+
+    media_url = settings.MEDIA_URL.rstrip("/")
+    if valor.startswith("/"):
+        path = valor
+    else:
+        path = f"/{valor.lstrip('/')}"
+
+    if not path.startswith(f"{media_url}/"):
+        if path.startswith("/vendedores/"):
+            path = f"{media_url}{path}"
+        else:
+            path = f"{media_url}/{path.lstrip('/')}"
+
+    backend_public_url = (getattr(settings, "BACKEND_PUBLIC_URL", "") or "").rstrip("/")
+    if backend_public_url:
+        return f"{backend_public_url}{path}"
+
+    request = (context or {}).get("request")
+    if request:
+        return request.build_absolute_uri(path)
+
+    return path
 
 
 class TipoBemSerializer(serializers.ModelSerializer):

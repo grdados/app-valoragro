@@ -91,6 +91,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+# URL publica do backend para montar links absolutos de media quando necessario
+BACKEND_PUBLIC_URL = config("BACKEND_PUBLIC_URL", default="")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

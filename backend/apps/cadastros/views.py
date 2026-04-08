@@ -125,7 +125,8 @@ class VendedorViewSet(viewsets.ModelViewSet):
         caminho_salvo = default_storage.save(nome_arquivo, arquivo)
         vendedor.foto = f"{settings.MEDIA_URL}{caminho_salvo}".replace("//", "/")
         vendedor.save(update_fields=["foto"])
-        return Response({"foto": vendedor.foto})
+        foto_url = VendedorSerializer(vendedor, context={"request": request}).data.get("foto")
+        return Response({"foto": foto_url})
 
     @action(detail=True, methods=["post"], url_path="upload_foto")
     def upload_foto_legacy(self, request, pk=None):
