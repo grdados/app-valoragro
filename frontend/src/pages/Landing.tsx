@@ -87,7 +87,7 @@ const HERO_SLIDES = [
         titulo: 'Entrega de Carro',
         imagem: 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?auto=format&fit=crop&w=900&q=80',
         top: '20%',
-        right: '18%',
+        right: '23%',
         width: '240px',
         height: '300px',
         depth: 0.5,
@@ -97,7 +97,7 @@ const HERO_SLIDES = [
         titulo: 'Entrega de Moto',
         imagem: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=900&q=80',
         top: '50%',
-        right: '30%',
+        right: '36%',
         width: '155px',
         height: '205px',
         depth: 0.8,
@@ -107,7 +107,7 @@ const HERO_SLIDES = [
         titulo: 'Conquista da Casa',
         imagem: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80',
         top: '35%',
-        right: '7%',
+        right: '13%',
         width: '195px',
         height: '250px',
         depth: 1.1,
@@ -128,7 +128,7 @@ const HERO_SLIDES = [
         titulo: 'Investimento',
         imagem: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=900&q=80',
         top: '20%',
-        right: '19%',
+        right: '24%',
         width: '238px',
         height: '300px',
         depth: 0.5,
@@ -138,7 +138,7 @@ const HERO_SLIDES = [
         titulo: 'Reforma',
         imagem: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=80',
         top: '49%',
-        right: '29%',
+        right: '35%',
         width: '150px',
         height: '200px',
         depth: 0.85,
@@ -148,7 +148,7 @@ const HERO_SLIDES = [
         titulo: 'Frota Empresarial',
         imagem: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=900&q=80',
         top: '34%',
-        right: '7%',
+        right: '13%',
         width: '195px',
         height: '248px',
         depth: 1.1,
@@ -428,30 +428,32 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-black/35" />
 
         <div className="absolute inset-0 hidden lg:block pointer-events-none">
-          {HERO_SLIDES[heroAtivo].cards.map((card, idx) => {
-            const tx = Math.round(parallax.x * 18 * card.depth)
-            const ty = Math.round(parallax.y * 14 * card.depth)
-            return (
-              <article
-                key={`${HERO_SLIDES[heroAtivo].id}-${card.titulo}`}
-                className="absolute rounded-2xl overflow-hidden border border-white/25 shadow-2xl bg-black/20 backdrop-blur-sm"
-                style={{
-                  top: card.top,
-                  right: card.right,
-                  width: card.width,
-                  height: card.height,
-                  transform: `translate3d(${tx}px, ${ty}px, 0) rotate(${card.rotate}deg)`,
-                  transition: 'transform 220ms ease-out, opacity 420ms ease',
-                }}
-              >
-                <img src={card.imagem} alt={card.titulo} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <p className="absolute left-3 bottom-2 text-[11px] font-semibold tracking-wide text-white/95">
-                  {card.titulo}
-                </p>
-              </article>
-            )
-          })}
+          <div className="relative mx-auto max-w-7xl h-full overflow-hidden">
+            {HERO_SLIDES[heroAtivo].cards.map((card, idx) => {
+              const tx = Math.round(parallax.x * 18 * card.depth)
+              const ty = Math.round(parallax.y * 14 * card.depth)
+              return (
+                <article
+                  key={`${HERO_SLIDES[heroAtivo].id}-${card.titulo}`}
+                  className="absolute rounded-2xl overflow-hidden border border-white/25 shadow-2xl bg-black/20 backdrop-blur-sm"
+                  style={{
+                    top: card.top,
+                    right: card.right,
+                    width: card.width,
+                    height: card.height,
+                    transform: `translate3d(${tx}px, ${ty}px, 0) rotate(${card.rotate}deg)`,
+                    transition: 'transform 220ms ease-out, opacity 420ms ease',
+                  }}
+                >
+                  <img src={card.imagem} alt={card.titulo} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <p className="absolute left-3 bottom-2 text-[11px] font-semibold tracking-wide text-white/95">
+                    {card.titulo}
+                  </p>
+                </article>
+              )
+            })}
+          </div>
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 h-full min-h-[calc(78vh-5rem)] lg:min-h-[calc(85vh-5rem)] flex items-center">
