@@ -99,6 +99,7 @@ export default function VendedoresPage() {
       const error = err as {
         message?: string
         response?: { status?: number; data?: unknown }
+        config?: { method?: string; url?: string; baseURL?: string }
       }
 
       const data = error?.response?.data
@@ -129,6 +130,13 @@ export default function VendedoresPage() {
 
       if (error?.response?.status) {
         msg = `[${error.response.status}] ${msg}`
+      }
+
+      const method = (error?.config?.method || '').toUpperCase()
+      const reqUrl = error?.config?.url || ''
+      const baseUrl = error?.config?.baseURL || ''
+      if (reqUrl || baseUrl) {
+        msg += `\n\nRequisição: ${method || 'REQUEST'} ${baseUrl || ''}${reqUrl || ''}`
       }
 
       setFormError(msg)

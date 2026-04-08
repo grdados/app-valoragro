@@ -79,18 +79,41 @@ export const vendedoresApi = {
   update: (id: number, data: ApiPayload) => api.put(`/vendedores/${id}/`, data),
   remove: (id: number) => api.delete(`/vendedores/${id}/`),
   uploadFoto: (id: number, foto: File) => {
+    const token = localStorage.getItem('access_token')
     const formData = new FormData()
     formData.append('foto', foto)
-    return api.post(`/vendedores/${id}/upload-foto/`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }).catch((err: unknown) => {
-      const status = (err as { response?: { status?: number } })?.response?.status
-      if (status !== 404) throw err
-      // Fallback para ambientes com rota legada (underscore)
-      return api.post(`/vendedores/${id}/upload_foto/`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
-    })
+
+    const envApiRaw = String(import.meta.env.VITE_API_URL || '').trim()
+    const envApi = envApiRaw.replace(/\/+$/, '')
+    const roots = new Set<string>()
+    if (envApi) {
+      roots.add(envApi)
+      if (envApi.endsWith('/api')) roots.add(envApi.slice(0, -4) + '/api')
+      else roots.add(`${envApi}/api`)
+    }
+    roots.add('/api')
+
+    const urls: string[] = []
+    for (const root of roots) {
+      urls.push(`${root}/vendedores/${id}/upload-foto/`)
+      urls.push(`${root}/vendedores/${id}/upload_foto/`)
+    }
+
+    const headers: Record<string, string> = { 'Content-Type': 'multipart/form-data' }
+    if (token) headers.Authorization = `Bearer ${token}`
+
+    const tryUpload = async (index: number): Promise<unknown> => {
+      const url = urls[index]
+      try {
+        return await axios.post(url, formData, { headers })
+      } catch (err: unknown) {
+        const status = (err as { response?: { status?: number } })?.response?.status
+        if (status === 404 && index < urls.length - 1) return tryUpload(index + 1)
+        throw err
+      }
+    }
+
+    return tryUpload(0)
   },
 }
 
