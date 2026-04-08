@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -9,7 +9,6 @@ import {
   Building2,
   Package,
   Calendar,
-  BarChart3,
   ChevronLeft,
   ChevronRight,
   Settings,
@@ -52,17 +51,17 @@ const equipeNav: NavItem[] = [
 ]
 
 const geraisNav: NavItem[] = [
+  { to: '/painel/cadastros/consorcios', icon: Building2, label: 'Consórcios' },
   { to: '/painel/cadastros/assembleias', icon: Calendar, label: 'Assembleias' },
   { to: '/painel/cadastros/cobans', icon: Landmark, label: 'COBAN' },
   { to: '/painel/cadastros/tipos-bem', icon: Boxes, label: 'Tipo de Bem' },
   { to: '/painel/cadastros/faixas', icon: Layers, label: 'Faixa da Comissão' },
 ]
 
-const cadastrosExtrasNav: NavItem[] = [
-  { to: '/painel/cadastros/consorcios', icon: Building2, label: 'Consórcios' },
+const administrativoNav: NavItem[] = [
   { to: '/painel/empresa', icon: Package, label: 'Dados da Empresa' },
-  { to: '/painel/backups', icon: Database, label: 'Backups' },
   { to: '/painel/cadastros/usuarios', icon: Settings, label: 'Usuários' },
+  { to: '/painel/backups', icon: Database, label: 'Backups' },
 ]
 
 const coordenadorNav: NavItem[] = [
@@ -83,10 +82,12 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
 
   const [cadastrosOpen, setCadastrosOpen] = useState(true)
   const [geraisOpen, setGeraisOpen] = useState(true)
+  const [administrativoOpen, setAdministrativoOpen] = useState(true)
 
   const isGeraisRoute = useMemo(
     () =>
       [
+        '/painel/cadastros/consorcios',
         '/painel/cadastros/assembleias',
         '/painel/cadastros/cobans',
         '/painel/cadastros/tipos-bem',
@@ -95,10 +96,19 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
     [location.pathname]
   )
 
+  const isAdministrativoRoute = useMemo(
+    () =>
+      ['/painel/empresa', '/painel/cadastros/usuarios', '/painel/backups'].some((route) =>
+        location.pathname.startsWith(route)
+      ),
+    [location.pathname]
+  )
+
   useEffect(() => {
     if (location.pathname.startsWith('/painel/cadastros/')) setCadastrosOpen(true)
     if (isGeraisRoute) setGeraisOpen(true)
-  }, [location.pathname, isGeraisRoute])
+    if (isAdministrativoRoute) setAdministrativoOpen(true)
+  }, [location.pathname, isGeraisRoute, isAdministrativoRoute])
 
   return (
     <aside
@@ -176,9 +186,29 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
                   </div>
                 )}
 
-                {cadastrosExtrasNav.map((item) => (
-                  <SidebarItem key={item.to} item={item} open={open} />
-                ))}
+                {open && (
+                  <button
+                    type="button"
+                    onClick={() => setAdministrativoOpen((v) => !v)}
+                    className={cn(
+                      'w-full mt-1 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center justify-between transition-colors',
+                      isAdministrativoRoute
+                        ? 'bg-white/10 text-white'
+                        : 'text-[#b7cabd] hover:bg-white/5 hover:text-white'
+                    )}
+                  >
+                    <span>Administrativo</span>
+                    {administrativoOpen ? <ChevronLeft className="w-3.5 h-3.5 rotate-[-90deg]" /> : <ChevronLeft className="w-3.5 h-3.5 rotate-180" />}
+                  </button>
+                )}
+
+                {administrativoOpen && (
+                  <div className={cn('space-y-1', open ? 'ml-3' : '')}>
+                    {administrativoNav.map((item) => (
+                      <SidebarItem key={item.to} item={item} open={open} compact={open} />
+                    ))}
+                  </div>
+                )}
               </>
             )}
           </>
@@ -197,9 +227,8 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
               </button>
             )}
             {!open && <div className="border-t border-white/10 my-2" />}
-            {cadastrosOpen && coordenadorNav.map((item) => (
-              <SidebarItem key={item.to} item={item} open={open} />
-            ))}
+            {cadastrosOpen &&
+              coordenadorNav.map((item) => <SidebarItem key={item.to} item={item} open={open} />)}
           </>
         )}
 
