@@ -71,30 +71,30 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'relative flex flex-col bg-[#1B4F8C] text-white transition-all duration-300 ease-in-out',
+        'relative flex flex-col text-white transition-all duration-300 ease-in-out admin-gradient',
         open ? 'w-64' : 'w-16'
       )}
     >
-      <div className="flex items-center justify-between p-4 border-b border-blue-700">
+      <div className="flex items-center justify-between p-4 border-b border-white/10">
         {open && (
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-[#1B4F8C]" />
+            <div className="w-8 h-8 bg-[#66e24d] rounded-lg flex items-center justify-center shadow">
+              <BarChart3 className="w-5 h-5 text-[#071108]" />
             </div>
             <div>
               <p className="text-sm font-bold leading-none">Valor Agro</p>
-              <p className="text-xs text-blue-200 leading-none mt-0.5">Gestão de Consórcios</p>
+              <p className="text-xs text-[#b7cabd] leading-none mt-0.5">Gestão de Consórcios</p>
             </div>
           </div>
         )}
         {!open && (
-          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center mx-auto">
-            <BarChart3 className="w-5 h-5 text-[#1B4F8C]" />
+          <div className="w-8 h-8 bg-[#66e24d] rounded-lg flex items-center justify-center mx-auto shadow">
+            <BarChart3 className="w-5 h-5 text-[#071108]" />
           </div>
         )}
         <button
           onClick={onToggle}
-          className="ml-auto p-1 rounded-lg hover:bg-blue-700 transition-colors"
+          className="ml-auto p-1 rounded-lg hover:bg-white/10 transition-colors"
         >
           {open ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </button>
@@ -108,11 +108,11 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
         {isSupervisorOrAbove() && (
           <>
             {open && (
-              <p className="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-blue-300">
+              <p className="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-[#b7cabd]">
                 Cadastros
               </p>
             )}
-            {!open && <div className="border-t border-blue-700 my-2" />}
+            {!open && <div className="border-t border-white/10 my-2" />}
             {supervisorNav.map((item) => (
               <SidebarItem key={item.to} item={item} open={open} />
             ))}
@@ -122,11 +122,11 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
         {isCoordenador() && (
           <>
             {open && (
-              <p className="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-blue-300">
+              <p className="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-[#b7cabd]">
                 Equipe
               </p>
             )}
-            {!open && <div className="border-t border-blue-700 my-2" />}
+            {!open && <div className="border-t border-white/10 my-2" />}
             {coordenadorNav.map((item) => (
               <SidebarItem key={item.to} item={item} open={open} />
             ))}
@@ -136,11 +136,11 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
         {isDev() && (
           <>
             {open && (
-              <p className="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-blue-300">
+              <p className="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-[#b7cabd]">
                 Desenvolvedor
               </p>
             )}
-            {!open && <div className="border-t border-blue-700 my-2" />}
+            {!open && <div className="border-t border-white/10 my-2" />}
             {devOnlyNav.map((item) => (
               <SidebarItem key={item.to} item={item} open={open} />
             ))}
@@ -150,11 +150,11 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
         {user?.perfil === 'supervisor' && (
           <>
             {open && (
-              <p className="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-blue-300">
+              <p className="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-[#b7cabd]">
                 Sistema
               </p>
             )}
-            {!open && <div className="border-t border-blue-700 my-2" />}
+            {!open && <div className="border-t border-white/10 my-2" />}
             {supervisorInfoNav.map((item) => (
               <SidebarItem key={item.to} item={item} open={open} />
             ))}
@@ -163,14 +163,14 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
       </nav>
 
       {open && (
-        <div className="p-4 border-t border-blue-700">
+        <div className="p-4 border-t border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-sm font-bold">
+            <div className="w-8 h-8 rounded-full bg-[#66e24d] text-[#061007] flex items-center justify-center text-sm font-bold">
               {user?.nome?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{user?.nome}</p>
-              <p className="text-xs text-blue-300 capitalize">{user?.perfil}</p>
+              <p className="text-xs text-[#b7cabd] capitalize">{user?.perfil}</p>
             </div>
           </div>
         </div>
@@ -188,8 +188,8 @@ function SidebarItem({ item, open }: { item: NavItem; open: boolean }) {
         cn(
           'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all',
           isActive
-            ? 'bg-white text-[#1B4F8C] shadow-sm'
-            : 'text-blue-100 hover:bg-blue-700 hover:text-white'
+            ? 'bg-[#66e24d] text-[#061007] shadow-sm'
+            : 'text-[#e4ece7] hover:bg-white/10 hover:text-white'
         )
       }
       title={!open ? item.label : undefined}

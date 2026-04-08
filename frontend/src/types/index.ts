@@ -220,7 +220,9 @@ export interface DashboardAdmin {
   ranking_coordenadores: { vendedor__coordenador__id: number; vendedor__coordenador__nome: string; total_vendas: number; qtd_vendas: number }[]
   vendas_por_coban: { coban__sigla: string; total: number; qtd: number }[]
   vendas_por_tipo: { tipo_bem__nome: string; total: number; qtd: number }[]
+  vendas_por_consorcio: { consorcio__nome: string; total: number; qtd: number }[]
   vendas_por_mes: { mes: string; total: number; qtd: number }[]
+  vendas_mensal_por_produto: { mes: string; produto: string; total: number; qtd: number }[]
 }
 
 export interface DashboardCoordenador {

@@ -16,6 +16,20 @@ const defaultConfig: BackupSettings = {
   atualizado_em: null,
 }
 
+function getApiErrorMessage(error: unknown, fallback: string) {
+  const err = error as {
+    response?: {
+      data?: { detail?: string } | string
+      status?: number
+    }
+    message?: string
+  }
+  if (typeof err?.response?.data === 'string') return err.response.data
+  if (typeof err?.response?.data?.detail === 'string') return err.response.data.detail
+  if (typeof err?.message === 'string' && err.message.trim()) return err.message
+  return fallback
+}
+
 function formatBytes(bytes: number) {
   if (!bytes) return '0 B'
   const units = ['B', 'KB', 'MB', 'GB']
@@ -55,8 +69,8 @@ export default function BackupsPage() {
       const listData = listRes.data as PaginatedResponse<BackupArquivo> | BackupArquivo[]
       setConfig(configRes.data || defaultConfig)
       setItems(Array.isArray(listData) ? listData : listData.results || [])
-    } catch {
-      toast.error('Erro ao carregar configurações de backup.')
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Erro ao carregar configurações de backup.'))
     } finally {
       setLoading(false)
     }
@@ -76,8 +90,8 @@ export default function BackupsPage() {
       })
       toast.success('Configuração de backup atualizada.')
       await fetchAll()
-    } catch {
-      toast.error('Erro ao salvar configuração de backup.')
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Erro ao salvar configuração de backup.'))
     } finally {
       setSavingConfig(false)
     }
@@ -89,8 +103,8 @@ export default function BackupsPage() {
       await backupsApi.gerarAgora()
       toast.success('Backup gerado com sucesso.')
       await fetchAll()
-    } catch {
-      toast.error('Não foi possível gerar o backup agora.')
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Não foi possível gerar o backup agora.'))
     } finally {
       setRunningNow(false)
     }
@@ -123,8 +137,8 @@ export default function BackupsPage() {
       await backupsApi.restaurarPorId(backup.id)
       toast.success('Backup restaurado com sucesso.')
       await fetchAll()
-    } catch {
-      toast.error('Erro ao restaurar backup selecionado.')
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Erro ao restaurar backup selecionado.'))
     } finally {
       setRestoring(false)
     }
@@ -146,8 +160,8 @@ export default function BackupsPage() {
       toast.success('Backup restaurado com sucesso pelo upload.')
       setUploadFile(null)
       await fetchAll()
-    } catch {
-      toast.error('Erro ao restaurar backup por upload.')
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Erro ao restaurar backup por upload.'))
     } finally {
       setRestoring(false)
     }

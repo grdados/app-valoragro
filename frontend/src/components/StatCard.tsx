@@ -11,11 +11,11 @@ interface StatCardProps {
 }
 
 const colorMap = {
-  blue: { bg: 'bg-blue-50', icon: 'bg-[#1B4F8C] text-white', text: 'text-[#1B4F8C]', border: 'border-blue-100' },
-  green: { bg: 'bg-emerald-50', icon: 'bg-emerald-600 text-white', text: 'text-emerald-700', border: 'border-emerald-100' },
-  yellow: { bg: 'bg-amber-50', icon: 'bg-amber-500 text-white', text: 'text-amber-700', border: 'border-amber-100' },
-  red: { bg: 'bg-red-50', icon: 'bg-red-600 text-white', text: 'text-red-700', border: 'border-red-100' },
-  purple: { bg: 'bg-purple-50', icon: 'bg-purple-600 text-white', text: 'text-purple-700', border: 'border-purple-100' },
+  blue: { icon: 'bg-[#66e24d] text-[#071108]', text: 'text-[#1d6f2f]', border: 'border-[#d9ecd9]' },
+  green: { icon: 'bg-[#4fd33a] text-[#071108]', text: 'text-[#1c7f36]', border: 'border-[#d9ecd9]' },
+  yellow: { icon: 'bg-[#c7f565] text-[#28340b]', text: 'text-[#557114]', border: 'border-[#e6f3c8]' },
+  red: { icon: 'bg-[#ef4444] text-white', text: 'text-red-700', border: 'border-red-100' },
+  purple: { icon: 'bg-[#173322] text-[#9ff08e]', text: 'text-[#1f8a3b]', border: 'border-[#d9ecd9]' },
 }
 
 export default function StatCard({ title, value, subtitle, icon: Icon, color = 'blue', trend }: StatCardProps) {

@@ -1,23 +1,47 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Plus, Search, Pencil, Trash2, X } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
+
 import { clientesApi } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
 import PageHeader from '../components/PageHeader'
 import type { Cliente } from '../types'
 
-const UF_LIST = ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO']
+const UF_LIST = [
+  'AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
+  'MG', 'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN',
+  'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO',
+]
+
+const STEPS = [
+  { id: 'pessoal', title: 'Dados Pessoais', fields: ['nome', 'cpf'] as const },
+  { id: 'contato', title: 'Contato e Endereço', fields: [] as const },
+  { id: 'profissional', title: 'Dados Profissionais', fields: [] as const },
+  { id: 'bancario', title: 'Dados Bancários', fields: [] as const },
+]
 
 export default function ClientesPage() {
   const { user } = useAuth()
-  const isAdmin = user?.perfil === 'admin'
+  const isAdmin = user?.perfil === 'admin' || user?.perfil === 'dev'
+
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Cliente | null>(null)
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<Cliente>()
+  const [step, setStep] = useState(0)
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    trigger,
+    getValues,
+    formState: { errors, isSubmitting },
+  } = useForm<Cliente>()
+
+  const progress = useMemo(() => Math.round(((step + 1) / STEPS.length) * 100), [step])
 
   const load = async () => {
     setLoading(true)
@@ -29,10 +53,23 @@ export default function ClientesPage() {
     }
   }
 
-  useEffect(() => { load() }, [search])
+  useEffect(() => {
+    load()
+  }, [search])
 
-  const openCreate = () => { setEditing(null); reset({}); setShowModal(true) }
-  const openEdit = (c: Cliente) => { setEditing(c); reset(c); setShowModal(true) }
+  const openCreate = () => {
+    setEditing(null)
+    setStep(0)
+    reset({ ativo: true } as Partial<Cliente>)
+    setShowModal(true)
+  }
+
+  const openEdit = (c: Cliente) => {
+    setEditing(c)
+    setStep(0)
+    reset(c)
+    setShowModal(true)
+  }
 
   const onSubmit = async (data: Cliente) => {
     try {
@@ -47,7 +84,9 @@ export default function ClientesPage() {
       load()
     } catch (err: unknown) {
       const e = err as { response?: { data?: Record<string, string[]> } }
-      const msg = Object.entries(e?.response?.data || {}).map(([k, v]) => `${k}: ${v}`).join('; ')
+      const msg = Object.entries(e?.response?.data || {})
+        .map(([k, v]) => `${k}: ${v}`)
+        .join('; ')
       toast.error(msg || 'Erro ao salvar cliente')
     }
   }
@@ -62,6 +101,20 @@ export default function ClientesPage() {
       toast.error('Erro ao remover cliente')
     }
   }
+
+  const goNext = async () => {
+    const requiredFields = STEPS[step].fields
+    if (requiredFields.length > 0) {
+      const valid = await trigger([...requiredFields])
+      if (!valid) {
+        toast.error('Preencha os campos obrigatórios desta etapa.')
+        return
+      }
+    }
+    setStep((prev) => Math.min(prev + 1, STEPS.length - 1))
+  }
+
+  const goBack = () => setStep((prev) => Math.max(prev - 1, 0))
 
   return (
     <div className="space-y-6">
@@ -83,7 +136,7 @@ export default function ClientesPage() {
               className="input pl-9"
               placeholder="Buscar por nome ou CPF..."
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
             />
           </div>
         </div>
@@ -103,35 +156,53 @@ export default function ClientesPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {loading ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Carregando...</td></tr>
-              ) : clientes.length === 0 ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Nenhum cliente encontrado</td></tr>
-              ) : clientes.map(c => (
-                <tr key={c.id} className="table-row-hover">
-                  <td className="px-4 py-3 font-medium">{c.nome}</td>
-                  <td className="px-4 py-3">{c.cpf}</td>
-                  <td className="px-4 py-3">{c.celular}</td>
-                  <td className="px-4 py-3">{c.email}</td>
-                  <td className="px-4 py-3">{c.profissao}</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className={`badge ${c.ativo ? 'badge-success' : 'badge-error'}`}>
-                      {c.ativo ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-center gap-2">
-                      <button onClick={() => openEdit(c)} className="p-1.5 rounded hover:bg-blue-50 text-blue-600" title="Editar">
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      {isAdmin && (
-                        <button onClick={() => handleDelete(c.id)} className="p-1.5 rounded hover:bg-red-50 text-red-500" title="Excluir">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
+                <tr>
+                  <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
+                    Carregando...
                   </td>
                 </tr>
-              ))}
+              ) : clientes.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
+                    Nenhum cliente encontrado
+                  </td>
+                </tr>
+              ) : (
+                clientes.map((c) => (
+                  <tr key={c.id} className="table-row-hover">
+                    <td className="px-4 py-3 font-medium">{c.nome}</td>
+                    <td className="px-4 py-3">{c.cpf}</td>
+                    <td className="px-4 py-3">{c.celular}</td>
+                    <td className="px-4 py-3">{c.email}</td>
+                    <td className="px-4 py-3">{c.profissao}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={c.ativo ? 'badge-ativa' : 'badge-cancelada'}>
+                        {c.ativo ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => openEdit(c)}
+                          className="p-1.5 rounded hover:bg-blue-50 text-blue-600"
+                          title="Editar"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={() => handleDelete(c.id)}
+                            className="p-1.5 rounded hover:bg-red-50 text-red-500"
+                            title="Excluir"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -141,130 +212,197 @@ export default function ClientesPage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto py-8 px-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl">
             <div className="flex items-center justify-between px-6 py-4 border-b">
-              <h2 className="text-lg font-semibold text-gray-900">{editing ? 'Editar Cliente' : 'Novo Cliente'}</h2>
-              <button onClick={() => setShowModal(false)} className="p-1 rounded hover:bg-gray-100"><X className="w-5 h-5" /></button>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {editing ? 'Editar Cliente' : 'Novo Cliente'}
+              </h2>
+              <button onClick={() => setShowModal(false)} className="p-1 rounded hover:bg-gray-100">
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="label">Nome *</label>
-                  <input {...register('nome', { required: true })} className="input" />
-                  {errors.nome && <p className="text-red-500 text-xs mt-1">Obrigatório</p>}
-                </div>
-                <div>
-                  <label className="label">CPF *</label>
-                  <input {...register('cpf', { required: true })} className="input" placeholder="000.000.000-00" />
-                  {errors.cpf && <p className="text-red-500 text-xs mt-1">Obrigatório</p>}
-                </div>
-                <div>
-                  <label className="label">Identidade</label>
-                  <input {...register('identidade')} className="input" />
-                </div>
-                <div>
-                  <label className="label">Órgão Emissor</label>
-                  <input {...register('orgao_emissor')} className="input" placeholder="SSP/SP" />
-                </div>
-                <div>
-                  <label className="label">Data de Nascimento</label>
-                  <input type="date" {...register('data_nascimento')} className="input" />
-                </div>
-                <div>
-                  <label className="label">Sexo</label>
-                  <select {...register('sexo')} className="input">
-                    <option value="">Selecione</option>
-                    <option value="M">Masculino</option>
-                    <option value="F">Feminino</option>
-                    <option value="O">Outro</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="label">Estado Civil</label>
-                  <select {...register('estado_civil')} className="input">
-                    <option value="">Selecione</option>
-                    <option value="solteiro">Solteiro(a)</option>
-                    <option value="casado">Casado(a)</option>
-                    <option value="divorciado">Divorciado(a)</option>
-                    <option value="viuvo">Viúvo(a)</option>
-                    <option value="uniao_estavel">União Estável</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="label">Nacionalidade</label>
-                  <input {...register('nacionalidade')} className="input" />
-                </div>
-                <div>
-                  <label className="label">UF</label>
-                  <select {...register('uf')} className="input">
-                    <option value="">Selecione</option>
-                    {UF_LIST.map(u => <option key={u} value={u}>{u}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="label">Naturalidade</label>
-                  <input {...register('naturalidade')} className="input" />
-                </div>
-                <div>
-                  <label className="label">Celular</label>
-                  <input {...register('celular')} className="input" placeholder="(00) 00000-0000" />
-                </div>
-                <div>
-                  <label className="label">E-mail</label>
-                  <input type="email" {...register('email')} className="input" />
-                </div>
-                <div>
-                  <label className="label">Escolaridade</label>
-                  <select {...register('escolaridade')} className="input">
-                    <option value="">Selecione</option>
-                    <option value="fundamental">Ensino Fundamental</option>
-                    <option value="medio">Ensino Médio</option>
-                    <option value="superior">Ensino Superior</option>
-                    <option value="pos">Pós-Graduação</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="label">Profissão</label>
-                  <input {...register('profissao')} className="input" />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="label">Endereço</label>
-                  <input {...register('endereco')} className="input" />
-                </div>
-                <div>
-                  <label className="label">Número</label>
-                  <input {...register('numero')} className="input" />
-                </div>
-                <div>
-                  <label className="label">Empresa</label>
-                  <input {...register('empresa')} className="input" />
-                </div>
-                <div>
-                  <label className="label">Data de Admissão</label>
-                  <input type="date" {...register('data_admissao')} className="input" />
-                </div>
-                <div>
-                  <label className="label">Renda (R$)</label>
-                  <input type="number" step="0.01" {...register('renda', { valueAsNumber: true })} className="input" />
-                </div>
-                <div>
-                  <label className="label">Conta Bancária</label>
-                  <input {...register('conta_bancaria')} className="input" />
-                </div>
-                <div>
-                  <label className="label">Agência</label>
-                  <input {...register('agencia')} className="input" />
-                </div>
-                {editing && (
-                  <div className="flex items-center gap-2 sm:col-span-2">
-                    <input type="checkbox" id="ativo" {...register('ativo')} className="w-4 h-4" />
-                    <label htmlFor="ativo" className="text-sm text-gray-700">Ativo</label>
-                  </div>
-                )}
+
+            <div className="px-6 pt-4">
+              <div className="flex items-center justify-between text-xs text-gray-600 mb-2">
+                <span>Etapa {step + 1} de {STEPS.length}</span>
+                <span>{progress}%</span>
               </div>
-              <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="btn-secondary">Cancelar</button>
-                <button type="submit" disabled={isSubmitting} className="btn-primary">
-                  {isSubmitting ? 'Salvando...' : 'Salvar'}
-                </button>
+              <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#1B4F8C] transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <p className="text-sm font-semibold text-[#1B4F8C] mt-2">{STEPS[step].title}</p>
+            </div>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
+              {step === 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2">
+                    <label className="label">Nome *</label>
+                    <input {...register('nome', { required: true })} className="input" />
+                    {errors.nome && <p className="text-red-500 text-xs mt-1">Obrigatório</p>}
+                  </div>
+                  <div>
+                    <label className="label">CPF *</label>
+                    <input {...register('cpf', { required: true })} className="input" placeholder="000.000.000-00" />
+                    {errors.cpf && <p className="text-red-500 text-xs mt-1">Obrigatório</p>}
+                  </div>
+                  <div>
+                    <label className="label">Identidade</label>
+                    <input {...register('identidade')} className="input" />
+                  </div>
+                  <div>
+                    <label className="label">Órgão Emissor</label>
+                    <input {...register('orgao_emissor')} className="input" placeholder="SSP/SP" />
+                  </div>
+                  <div>
+                    <label className="label">Data de Nascimento</label>
+                    <input type="date" {...register('data_nascimento')} className="input" />
+                  </div>
+                  <div>
+                    <label className="label">Sexo</label>
+                    <select {...register('sexo')} className="input">
+                      <option value="">Selecione</option>
+                      <option value="M">Masculino</option>
+                      <option value="F">Feminino</option>
+                      <option value="O">Outro</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label">Estado Civil</label>
+                    <select {...register('estado_civil')} className="input">
+                      <option value="">Selecione</option>
+                      <option value="solteiro">Solteiro(a)</option>
+                      <option value="casado">Casado(a)</option>
+                      <option value="divorciado">Divorciado(a)</option>
+                      <option value="viuvo">Viúvo(a)</option>
+                      <option value="uniao_estavel">União Estável</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {step === 1 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="label">Nacionalidade</label>
+                    <input {...register('nacionalidade')} className="input" />
+                  </div>
+                  <div>
+                    <label className="label">UF</label>
+                    <select {...register('uf')} className="input">
+                      <option value="">Selecione</option>
+                      {UF_LIST.map((u) => (
+                        <option key={u} value={u}>{u}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label">Naturalidade</label>
+                    <input {...register('naturalidade')} className="input" />
+                  </div>
+                  <div>
+                    <label className="label">Celular</label>
+                    <input {...register('celular')} className="input" placeholder="(00) 00000-0000" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="label">E-mail</label>
+                    <input type="email" {...register('email')} className="input" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="label">Endereço</label>
+                    <input {...register('endereco')} className="input" />
+                  </div>
+                  <div>
+                    <label className="label">Número</label>
+                    <input {...register('numero')} className="input" />
+                  </div>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="label">Escolaridade</label>
+                    <select {...register('escolaridade')} className="input">
+                      <option value="">Selecione</option>
+                      <option value="fundamental">Ensino Fundamental</option>
+                      <option value="medio">Ensino Médio</option>
+                      <option value="superior">Ensino Superior</option>
+                      <option value="pos">Pós-Graduação</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label">Profissão</label>
+                    <input {...register('profissao')} className="input" />
+                  </div>
+                  <div>
+                    <label className="label">Empresa</label>
+                    <input {...register('empresa')} className="input" />
+                  </div>
+                  <div>
+                    <label className="label">Data de Admissão</label>
+                    <input type="date" {...register('data_admissao')} className="input" />
+                  </div>
+                  <div>
+                    <label className="label">Renda (R$)</label>
+                    <input type="number" step="0.01" {...register('renda', { valueAsNumber: true })} className="input" />
+                  </div>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="label">Conta Bancária</label>
+                    <input {...register('conta_bancaria')} className="input" />
+                  </div>
+                  <div>
+                    <label className="label">Agência</label>
+                    <input {...register('agencia')} className="input" />
+                  </div>
+                  {editing && (
+                    <div className="flex items-center gap-2 sm:col-span-2">
+                      <input type="checkbox" id="ativo" {...register('ativo')} className="w-4 h-4" />
+                      <label htmlFor="ativo" className="text-sm text-gray-700">Ativo</label>
+                    </div>
+                  )}
+                  {!editing && (
+                    <div className="sm:col-span-2 rounded-lg bg-blue-50 border border-blue-100 p-3 text-sm text-blue-900">
+                      Cliente será criado como <strong>Ativo</strong>.
+                    </div>
+                  )}
+                  <div className="sm:col-span-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+                    <p><strong>Nome:</strong> {getValues('nome') || '-'}</p>
+                    <p><strong>CPF:</strong> {getValues('cpf') || '-'}</p>
+                    <p><strong>Celular:</strong> {getValues('celular') || '-'}</p>
+                    <p><strong>E-mail:</strong> {getValues('email') || '-'}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-between pt-2">
+                <div>
+                  {step > 0 && (
+                    <button type="button" onClick={goBack} className="btn-secondary">
+                      <ChevronLeft className="w-4 h-4" /> Voltar
+                    </button>
+                  )}
+                </div>
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setShowModal(false)} className="btn-secondary">
+                    Cancelar
+                  </button>
+                  {step < STEPS.length - 1 ? (
+                    <button type="button" onClick={goNext} className="btn-primary">
+                      Próximo <ChevronRight className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button type="submit" disabled={isSubmitting} className="btn-primary">
+                      {isSubmitting ? 'Salvando...' : 'Salvar'}
+                    </button>
+                  )}
+                </div>
               </div>
             </form>
           </div>

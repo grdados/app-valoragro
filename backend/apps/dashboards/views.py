@@ -96,11 +96,24 @@ class DashboardAdminView(APIView):
             .order_by("-total")
         )
 
+        vendas_por_consorcio = list(
+            vendas_qs.values("consorcio__nome")
+            .annotate(total=Sum("valor_bem"), qtd=Count("id"))
+            .order_by("-total")
+        )
+
         vendas_por_mes_raw = list(
             vendas_qs.annotate(mes=TruncMonth("data_venda"))
             .values("mes")
             .annotate(total=Sum("valor_bem"), qtd=Count("id"))
             .order_by("mes")
+        )
+
+        vendas_mensal_por_produto_raw = list(
+            vendas_qs.annotate(mes=TruncMonth("data_venda"))
+            .values("mes", "tipo_bem__nome")
+            .annotate(total=Sum("valor_bem"), qtd=Count("id"))
+            .order_by("mes", "tipo_bem__nome")
         )
 
         return Response({
@@ -111,6 +124,7 @@ class DashboardAdminView(APIView):
             "ranking_coordenadores": ranking_coordenadores,
             "vendas_por_coban": vendas_por_coban,
             "vendas_por_tipo": vendas_por_tipo,
+            "vendas_por_consorcio": vendas_por_consorcio,
             "total_contemplados": float(total_contemplados),
             "qtd_contemplados": qtd_contemplados,
             "vendas_por_mes": [
@@ -120,6 +134,15 @@ class DashboardAdminView(APIView):
                     "qtd": m["qtd"],
                 }
                 for m in vendas_por_mes_raw
+            ],
+            "vendas_mensal_por_produto": [
+                {
+                    "mes": m["mes"].isoformat() if m["mes"] else None,
+                    "produto": m["tipo_bem__nome"] or "Sem produto",
+                    "total": float(m["total"] or 0),
+                    "qtd": m["qtd"],
+                }
+                for m in vendas_mensal_por_produto_raw
             ],
         })
 

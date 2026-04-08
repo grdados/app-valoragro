@@ -43,3 +43,42 @@ services:
         fromDatabase:
           name: valoragro-db
           property: port
+
+  - type: cron
+    name: valoragro-backup-scheduler
+    runtime: python
+    rootDir: backend
+    schedule: "*/15 * * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python manage.py process_scheduled_backups
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.2
+      - key: SECRET_KEY
+        sync: false
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: DB_NAME
+        fromDatabase:
+          name: valoragro-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: valoragro-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: valoragro-db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: valoragro-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: valoragro-db
+          property: port

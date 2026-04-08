@@ -2,24 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --brand-bg: #050806;
+  --brand-surface: #0d1410;
+  --brand-surface-2: #111c16;
+  --brand-green: #66e24d;
+  --brand-green-strong: #4fd33a;
+  --brand-green-soft: #dff8d8;
+  --brand-text: #f5f7f6;
+  --brand-muted: #9eb5a6;
+  --panel-bg: #f3f7f2;
+}
+
 @layer base {
   * {
     @apply border-gray-200;
   }
   body {
-    @apply bg-gray-50 text-gray-900 font-sans antialiased;
+    @apply text-gray-900 font-sans antialiased;
+    background: var(--panel-bg);
   }
 }
 
 @layer components {
+  .admin-gradient {
+    background: linear-gradient(135deg, var(--brand-bg), var(--brand-surface) 45%, #173322);
+  }
+
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    transform: translateY(0);
+  }
+  .btn:hover {
+    transform: translateY(-1px);
   }
   .btn-primary {
-    @apply btn bg-[#1B4F8C] text-white hover:bg-[#1d3461] focus:ring-[#1B4F8C];
+    @apply btn text-[#071108] hover:shadow-lg focus:ring-[#66e24d];
+    background: var(--brand-green);
+  }
+  .btn-primary:hover {
+    background: var(--brand-green-strong);
   }
   .btn-secondary {
-    @apply btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-400;
+    @apply btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-[#66e24d];
   }
   .btn-danger {
     @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
@@ -28,13 +53,21 @@
     @apply btn bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500;
   }
   .input {
-    @apply w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1B4F8C] focus:border-transparent transition-all;
+    @apply w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-300;
+    will-change: transform, box-shadow;
+  }
+  .input:focus {
+    box-shadow: 0 0 0 2px rgba(102, 226, 77, 0.25), 0 10px 30px -18px rgba(102, 226, 77, 0.8);
+    transform: translateY(-1px);
   }
   .label {
     @apply block text-sm font-medium text-gray-700 mb-1;
   }
   .card {
-    @apply bg-white rounded-xl border border-gray-200 shadow-sm;
+    @apply bg-white rounded-xl border border-gray-200 shadow-sm transition-all duration-300;
+  }
+  .card:hover {
+    box-shadow: 0 10px 28px -24px rgba(9, 18, 11, 0.75);
   }
   .badge-pendente {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800;
@@ -46,16 +79,21 @@
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800;
   }
   .badge-ativa {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-green-800;
+    background: var(--brand-green-soft);
   }
   .badge-cancelada {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800;
   }
   .table-header {
-    @apply bg-[#1B4F8C] text-white text-xs font-semibold uppercase tracking-wider;
+    @apply text-white text-xs font-semibold uppercase tracking-wider;
+    background: linear-gradient(90deg, #0b130d, #1c2f24, #23402f);
   }
   .table-row-hover {
-    @apply hover:bg-blue-50 transition-colors;
+    @apply transition-colors;
+  }
+  .table-row-hover:hover {
+    background: #f3fbef;
   }
 }
 

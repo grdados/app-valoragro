@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from django.http import FileResponse, Http404
+from django.db import DatabaseError
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
@@ -28,7 +29,15 @@ class BackupViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False, methods=["get", "put"], url_path="configuracao")
     def configuracao(self, request):
-        config = get_or_create_settings()
+        try:
+            config = get_or_create_settings()
+        except DatabaseError:
+            return Response(
+                {
+                    "detail": "Estrutura de backup não encontrada no banco. Execute as migrações (python manage.py migrate)."
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
         if request.method == "GET":
             return Response(BackupSettingsSerializer(config).data)
 
@@ -45,15 +54,28 @@ class BackupViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False, methods=["post"], url_path="gerar")
     def gerar(self, request):
-        registro = create_backup_archive(
-            criado_por=request.user,
-            origem=BackupArquivo.ORIGEM_MANUAL,
-            observacao="Backup gerado manualmente no painel",
-        )
-        config = get_or_create_settings()
-        cleanup_old_backups(config.manter_dias)
-        data = BackupArquivoSerializer(registro, context={"request": request}).data
-        return Response(data, status=status.HTTP_201_CREATED)
+        try:
+            registro = create_backup_archive(
+                criado_por=request.user,
+                origem=BackupArquivo.ORIGEM_MANUAL,
+                observacao="Backup gerado manualmente no painel",
+            )
+            config = get_or_create_settings()
+            cleanup_old_backups(config.manter_dias)
+            data = BackupArquivoSerializer(registro, context={"request": request}).data
+            return Response(data, status=status.HTTP_201_CREATED)
+        except DatabaseError:
+            return Response(
+                {
+                    "detail": "Falha de banco ao gerar backup. Verifique migrações pendentes e conexão do banco."
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        except Exception as exc:  # noqa: BLE001
+            return Response(
+                {"detail": f"Erro ao gerar backup: {str(exc)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     @action(
         detail=False,
@@ -83,13 +105,25 @@ class BackupViewSet(viewsets.ReadOnlyModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            restore_from_backup(backup_path=Path(registro.arquivo.path), restaurado_por=request.user)
+            try:
+                restore_from_backup(backup_path=Path(registro.arquivo.path), restaurado_por=request.user)
+            except Exception as exc:  # noqa: BLE001
+                return Response(
+                    {"detail": f"Erro ao restaurar backup selecionado: {str(exc)}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             registro.restaurado_em = timezone.now()
             registro.restaurado_por = request.user
             registro.save(update_fields=["restaurado_em", "restaurado_por"])
             return Response({"detail": "Backup restaurado com sucesso."})
 
-        restore_from_uploaded_file(uploaded_file=arquivo, restaurado_por=request.user)
+        try:
+            restore_from_uploaded_file(uploaded_file=arquivo, restaurado_por=request.user)
+        except Exception as exc:  # noqa: BLE001
+            return Response(
+                {"detail": f"Erro ao restaurar backup por upload: {str(exc)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response({"detail": "Backup enviado e restaurado com sucesso."})
 
     @action(detail=False, methods=["post"], url_path="processar-agendados")
