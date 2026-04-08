@@ -83,6 +83,13 @@ export const vendedoresApi = {
     formData.append('foto', foto)
     return api.post(`/vendedores/${id}/upload-foto/`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+    }).catch((err: unknown) => {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status !== 404) throw err
+      // Fallback para ambientes com rota legada (underscore)
+      return api.post(`/vendedores/${id}/upload_foto/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
     })
   },
 }
