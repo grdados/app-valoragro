@@ -127,6 +127,11 @@ class VendedorViewSet(viewsets.ModelViewSet):
         vendedor.save(update_fields=["foto"])
         return Response({"foto": vendedor.foto})
 
+    @action(detail=True, methods=["post"], url_path="upload_foto")
+    def upload_foto_legacy(self, request, pk=None):
+        # Compatibilidade com frontend/ambientes legados que usam underscore.
+        return self.upload_foto(request, pk=pk)
+
 
 class TipoBemViewSet(viewsets.ModelViewSet):
     queryset = TipoBem.objects.all()
