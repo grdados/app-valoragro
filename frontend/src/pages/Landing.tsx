@@ -32,6 +32,16 @@ interface PublicVendedor {
   uf: string
 }
 
+interface PublicEmpresa {
+  nome?: string
+  endereco?: string
+  cidade?: string
+  uf?: string
+  telefone?: string
+  email?: string
+  site?: string
+}
+
 type Segmento = 'pf' | 'pj'
 
 interface LeadForm {
@@ -194,6 +204,7 @@ export default function LandingPage() {
   const [headerSolid, setHeaderSolid] = useState(false)
   const [secaoAtiva, setSecaoAtiva] = useState('inicio')
   const [vendedores, setVendedores] = useState<PublicVendedor[]>([])
+  const [empresa, setEmpresa] = useState<PublicEmpresa | null>(null)
   const [carregandoVendedores, setCarregandoVendedores] = useState(true)
   const [heroAtivo, setHeroAtivo] = useState(0)
   const [parallax, setParallax] = useState({ x: 0, y: 0 })
@@ -208,10 +219,26 @@ export default function LandingPage() {
     mensagem: '',
   })
 
+  const enderecoCompleto = [empresa?.endereco, empresa?.cidade, empresa?.uf]
+    .filter(Boolean)
+    .join(', ')
+    .trim()
+  const localLabel = [empresa?.cidade, empresa?.uf].filter(Boolean).join(' - ') || 'Cuiaba - MT'
+  const telefoneEmpresa = empresa?.telefone || '+55 (65) 0000-0000'
+  const emailEmpresa = empresa?.email || 'contato@valoragro.com.br'
+  const mapaQuery = encodeURIComponent(enderecoCompleto || localLabel)
+
   useEffect(() => {
     const onScroll = () => setHeaderSolid(window.scrollY > 12)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    publicApi
+      .getEmpresa()
+      .then((res) => setEmpresa(res.data || null))
+      .catch(() => setEmpresa(null))
   }, [])
 
   useEffect(() => {
@@ -643,26 +670,33 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="localizacao" className="py-16 bg-[#edf4eb]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 grid lg:grid-cols-2 gap-6">
-          <div className="card p-6">
+      <section id="localizacao" className="relative py-16 overflow-hidden bg-[#edf4eb]">
+        <div className="absolute inset-y-0 right-0 w-full lg:w-[56%]">
+          <iframe
+            title="Mapa Valor Agro"
+            src={`https://maps.google.com/maps?q=${mapaQuery}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+            className="w-full h-full"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#edf4eb] via-[#edf4eb]/35 to-transparent pointer-events-none" />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="max-w-xl rounded-2xl border border-white/70 bg-white/85 p-6 shadow-lg backdrop-blur-sm">
             <h2 className="text-3xl font-extrabold">Localizacao</h2>
             <p className="mt-3 text-slate-600">
-              Atendimento digital para todo Brasil com base de operacao em Mato Grosso.
+              Atendimento digital para todo Brasil com apoio da base operacional cadastrada no sistema.
             </p>
             <div className="mt-4 space-y-2 text-sm text-slate-700">
-              <p className="flex items-center gap-2"><MapPin className="w-4 h-4 text-[#1f8c3b]" /> Cuiaba - MT</p>
-              <p className="flex items-center gap-2"><Phone className="w-4 h-4 text-[#1f8c3b]" /> +55 (65) 0000-0000</p>
-              <p className="flex items-center gap-2"><Mail className="w-4 h-4 text-[#1f8c3b]" /> contato@valoragro.com.br</p>
+              <p className="flex items-center gap-2"><MapPin className="w-4 h-4 text-[#1f8c3b]" /> {localLabel}</p>
+              {enderecoCompleto && (
+                <p className="flex items-start gap-2 text-slate-600">
+                  <MapPin className="w-4 h-4 text-[#1f8c3b] mt-0.5" /> {enderecoCompleto}
+                </p>
+              )}
+              <p className="flex items-center gap-2"><Phone className="w-4 h-4 text-[#1f8c3b]" /> {telefoneEmpresa}</p>
+              <p className="flex items-center gap-2"><Mail className="w-4 h-4 text-[#1f8c3b]" /> {emailEmpresa}</p>
             </div>
-          </div>
-          <div className="card overflow-hidden min-h-[280px]">
-            <iframe
-              title="Mapa Valor Agro"
-              src="https://maps.google.com/maps?q=Cuiaba%20MT&t=&z=12&ie=UTF8&iwloc=&output=embed"
-              className="w-full h-full min-h-[280px]"
-              loading="lazy"
-            />
           </div>
         </div>
       </section>
@@ -793,9 +827,9 @@ export default function LandingPage() {
           </div>
           <div id="contato-final">
             <p className="font-semibold text-white">Contato</p>
-            <p className="mt-2 text-sm flex items-center gap-2"><Phone className="w-4 h-4" /> +55 (65) 0000-0000</p>
-            <p className="mt-1 text-sm flex items-center gap-2"><Mail className="w-4 h-4" /> contato@valoragro.com.br</p>
-            <p className="mt-1 text-sm flex items-center gap-2"><MapPin className="w-4 h-4" /> Cuiaba - MT</p>
+            <p className="mt-2 text-sm flex items-center gap-2"><Phone className="w-4 h-4" /> {telefoneEmpresa}</p>
+            <p className="mt-1 text-sm flex items-center gap-2"><Mail className="w-4 h-4" /> {emailEmpresa}</p>
+            <p className="mt-1 text-sm flex items-center gap-2"><MapPin className="w-4 h-4" /> {localLabel}</p>
           </div>
         </div>
         <div className="border-t border-white/10 py-4 text-center text-xs text-slate-400">

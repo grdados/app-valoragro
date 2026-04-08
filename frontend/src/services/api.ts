@@ -119,6 +119,7 @@ export const vendedoresApi = {
 
 export const publicApi = {
   listVendedores: () => api.get('/public/vendedores/'),
+  getEmpresa: () => api.get('/public/empresa/'),
 }
 
 export const tiposBemApi = {

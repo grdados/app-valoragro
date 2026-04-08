@@ -31,8 +31,18 @@ class DadosEmpresaView(APIView):
     def patch(self, request):
         obj = DadosEmpresa.objects.first()
         if not obj:
-            return Response({"detail": "Dados da empresa não configurados."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "Dados da empresa nao configurados."}, status=status.HTTP_404_NOT_FOUND)
         serializer = DadosEmpresaSerializer(obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+
+class PublicDadosEmpresaView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        obj = DadosEmpresa.objects.first()
+        if not obj:
+            return Response({})
+        return Response(DadosEmpresaSerializer(obj).data)
