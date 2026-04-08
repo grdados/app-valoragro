@@ -96,12 +96,43 @@ export default function VendedoresPage() {
       setFotoPreview('')
       fetchData()
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { detail?: string } & Record<string, string[]> } }
-      const detail = error?.response?.data?.detail
-      const firstField = Object.values(error?.response?.data || {}).flat?.()[0]
-      const msg = String(detail || firstField || 'Erro ao salvar vendedor/foto')
+      const error = err as {
+        message?: string
+        response?: { status?: number; data?: unknown }
+      }
+
+      const data = error?.response?.data
+      let msg = ''
+
+      if (typeof data === 'string') {
+        msg = data
+      } else if (data && typeof data === 'object') {
+        const asRecord = data as Record<string, unknown>
+        const detail = asRecord.detail
+        if (typeof detail === 'string' && detail.trim()) {
+          msg = detail
+        } else {
+          const firstEntry = Object.values(asRecord)[0]
+          if (typeof firstEntry === 'string' && firstEntry.trim()) {
+            msg = firstEntry
+          } else if (Array.isArray(firstEntry) && firstEntry.length > 0) {
+            msg = String(firstEntry[0] || '')
+          } else {
+            msg = JSON.stringify(asRecord)
+          }
+        }
+      }
+
+      if (!msg) {
+        msg = error?.message || 'Erro ao salvar vendedor/foto'
+      }
+
+      if (error?.response?.status) {
+        msg = `[${error.response.status}] ${msg}`
+      }
+
       setFormError(msg)
-      toast.error('Falha ao salvar. Veja o detalhe no formulário.')
+      toast.error(msg)
       console.error('Erro ao salvar vendedor/foto:', err)
     } finally { setSaving(false) }
   }
@@ -238,7 +269,7 @@ export default function VendedoresPage() {
             <label htmlFor="ativo" className="text-sm">Ativo</label>
           </div>
           {formError && (
-            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 whitespace-pre-wrap break-words">
               {formError}
             </div>
           )}
