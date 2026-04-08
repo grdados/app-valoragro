@@ -169,6 +169,7 @@ const HERO_SLIDES = [
 ]
 
 const LOGO_URL = '/brand/logo-valor-agro.jpg'
+const GRDADOS_LOGO_URL = '/brand/logo-grdados.svg'
 
 function resolverFotoVendedor(foto?: string) {
   const fallback = 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=900&q=80'
@@ -832,8 +833,23 @@ export default function LandingPage() {
             <p className="mt-1 text-sm flex items-center gap-2"><MapPin className="w-4 h-4" /> {localLabel}</p>
           </div>
         </div>
-        <div className="border-t border-white/10 py-4 text-center text-xs text-slate-400">
-          Â© {new Date().getFullYear()} Valor Agro. Todos os direitos reservados.
+        <div className="border-t border-white/10 py-4 text-xs text-slate-400">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 grid items-center gap-3 md:grid-cols-3">
+            <p className="text-left">
+              © {new Date().getFullYear()} Valor Agro. Todos os direitos reservados.
+            </p>
+            <div className="flex justify-center">
+              <img src={GRDADOS_LOGO_URL} alt="GR Dados" className="h-7 w-auto object-contain opacity-90" />
+            </div>
+            <a
+              href="https://wa.me/5567998698159"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-left md:text-right hover:text-white transition-colors"
+            >
+              Contato WhatsApp: (67) 99869-8159
+            </a>
+          </div>
         </div>
       </footer>
     </div>
