@@ -88,6 +88,7 @@ const HERO_SLIDES = [
     id: 'pf',
     segmento: 'pf' as Segmento,
     titulo: 'Consorcio para Pessoa Fisica com planejamento e atendimento humano.',
+    tituloLinhas: ['Consorcio para Pessoa Fisica', 'com planejamento e', 'atendimento humano.'],
     descricao: 'Organize sua conquista com simulacao orientada para imovel, carro, moto e servicos.',
     imagem: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1400&q=80',
     bg: 'from-black via-[#0b1a0f] to-[#143420]',
@@ -129,6 +130,7 @@ const HERO_SLIDES = [
     id: 'pj',
     segmento: 'pj' as Segmento,
     titulo: 'Consorcio para Pessoa Juridica com foco em crescimento e previsibilidade.',
+    tituloLinhas: ['Consorcio para Pessoa Juridica', 'com foco em crescimento e', 'previsibilidade.'],
     descricao: 'Apoio comercial para renovacao de frota, ativos estrategicos e servicos empresariais.',
     imagem: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1400&q=80',
     bg: 'from-black via-[#101910] to-[#1e4a2d]',
@@ -456,7 +458,7 @@ export default function LandingPage() {
         ))}
         <div className="absolute inset-0 bg-black/35" />
 
-        <div className="absolute inset-0 hidden xl:block pointer-events-none">
+        <div className="absolute inset-0 hidden min-[1360px]:block pointer-events-none">
           <div className="relative mx-auto max-w-7xl h-full overflow-hidden">
             <div className="absolute inset-y-[10%] right-4 w-[48%] min-w-[520px] max-w-[720px]">
               {HERO_SLIDES[heroAtivo].cards.map((card, idx) => {
@@ -488,19 +490,24 @@ export default function LandingPage() {
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 h-full min-h-[calc(78vh-5rem)] lg:min-h-[calc(85vh-5rem)] flex items-center">
-          <div className="max-w-xl md:max-w-2xl xl:max-w-[620px] text-white py-10 text-center md:text-left mx-auto md:mx-0">
+          <div className="max-w-xl md:max-w-2xl xl:max-w-[620px] text-white py-10 text-center xl:text-left mx-auto xl:mx-0">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/20 border border-white/40 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
               <UserRound className="w-4 h-4" />
               {HERO_SLIDES[heroAtivo].badge}
             </span>
-            <h1 className="mt-4 text-2xl sm:text-3xl md:text-4xl lg:text-[3rem] font-extrabold leading-tight drop-shadow-sm">
-              {HERO_SLIDES[heroAtivo].titulo}
+            <h1 className="mt-4 text-[clamp(1.95rem,3.15vw,3.45rem)] font-extrabold leading-[1.08] drop-shadow-sm">
+              {HERO_SLIDES[heroAtivo].tituloLinhas.map((linha, idx) => (
+                <span key={`${HERO_SLIDES[heroAtivo].id}-linha-${idx}`}>
+                  {linha}
+                  {idx < HERO_SLIDES[heroAtivo].tituloLinhas.length - 1 ? <br /> : null}
+                </span>
+              ))}
             </h1>
             <p className="mt-4 text-sm sm:text-base lg:text-lg text-slate-100 max-w-xl mx-auto md:mx-0">
               {HERO_SLIDES[heroAtivo].descricao}
             </p>
             <button
-              className="btn mt-6 bg-[#66e24d] text-[#041109] hover:bg-[#7bea63] font-semibold mx-auto md:mx-0"
+              className="btn mt-6 bg-[#66e24d] text-[#041109] hover:bg-[#7bea63] font-semibold mx-auto xl:mx-0"
               onClick={() => irParaSimulacao(HERO_SLIDES[heroAtivo].segmento)}
             >
               Simular Agora
@@ -508,7 +515,7 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="absolute inset-0 pointer-events-none hidden min-[661px]:block">
+        <div className="absolute inset-0 pointer-events-none hidden min-[1281px]:block">
           <div className="h-full px-4 sm:px-6 flex items-center justify-between">
             <button
               onClick={anteriorHero}
