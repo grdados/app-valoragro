@@ -119,12 +119,33 @@ export const vendedoresApi = {
 
 export const publicApi = {
   listVendedores: () => api.get('/public/vendedores/'),
-  getEmpresa: () =>
-    api.get('/public/empresa/').catch((err: unknown) => {
-      const status = (err as { response?: { status?: number } })?.response?.status
-      if (status === 404 || status === 405) return api.get('/empresa/')
-      throw err
-    }),
+  getEmpresa: async () => {
+    const envApiRaw = String(import.meta.env.VITE_API_URL || '').trim()
+    const envApi = envApiRaw.replace(/\/+$/, '')
+    const roots = new Set<string>()
+    if (envApi) {
+      roots.add(envApi)
+      if (envApi.endsWith('/api')) roots.add(envApi.slice(0, -4) + '/api')
+      else roots.add(`${envApi}/api`)
+    }
+    roots.add('/api')
+
+    const urls: string[] = []
+    for (const root of roots) {
+      urls.push(`${root}/public/empresa/`)
+      urls.push(`${root}/empresa/`)
+    }
+
+    let lastError: unknown = null
+    for (const url of urls) {
+      try {
+        return await axios.get(url)
+      } catch (err: unknown) {
+        lastError = err
+      }
+    }
+    throw lastError
+  },
 }
 
 export const tiposBemApi = {
