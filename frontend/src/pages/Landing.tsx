@@ -1,4 +1,4 @@
-import { FormEvent, MouseEvent, useEffect, useMemo, useRef, useState } from 'react'
+﻿import { FormEvent, MouseEvent, useEffect, useMemo, useRef, useState } from 'react'
 import {
   BarChart3,
   Bike,
@@ -170,6 +170,7 @@ const HERO_SLIDES = [
 
 const LOGO_URL = '/brand/logo-valor-agro.jpg'
 const GRDADOS_LOGO_URL = '/brand/logo-grdados.svg'
+const EQUIPE_VENDAS_BG_URL = '/brand/equipe-vendas.jpg'
 
 function resolverFotoVendedor(foto?: string) {
   const fallback = 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=900&q=80'
@@ -570,27 +571,39 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="especialista" className="py-16 bg-[#edf4eb]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <section
+        id="especialista"
+        className="relative py-16 overflow-hidden bg-[#0b170f]"
+        style={{
+          backgroundImage: `url(${EQUIPE_VENDAS_BG_URL})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0b170f]/90 via-[#12311e]/78 to-[#1f6a3a]/70" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_20%,rgba(102,226,77,0.18),transparent_45%)]" />
+
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl font-extrabold">Falar com Especialista</h2>
-            <p className="mt-2 text-slate-600">
+            <h2 className="text-3xl font-extrabold text-white">Falar com Especialista</h2>
+            <p className="mt-2 text-emerald-100/90">
               Time comercial com conhecimento de consorcios BB para apoiar PF e PJ.
             </p>
           </div>
           <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {carregandoVendedores && (
-              <div className="sm:col-span-2 lg:col-span-3 card p-8 text-center text-slate-500">
+              <div className="sm:col-span-2 lg:col-span-3 rounded-xl border border-white/25 bg-white/15 backdrop-blur-md p-8 text-center text-white">
                 Carregando especialistas...
               </div>
             )}
             {!carregandoVendedores && vendedores.length === 0 && (
-              <div className="sm:col-span-2 lg:col-span-3 card p-8 text-center text-slate-500">
+              <div className="sm:col-span-2 lg:col-span-3 rounded-xl border border-white/25 bg-white/15 backdrop-blur-md p-8 text-center text-white">
                 Nenhum especialista disponivel no momento.
               </div>
             )}
             {vendedores.map((vendedor) => (
-              <article key={vendedor.id} className="card overflow-hidden">
+              <article key={vendedor.id} className="overflow-hidden rounded-xl border border-white/25 bg-white/90 shadow-xl">
                 <div className="h-44 bg-slate-200">
                   <img
                     src={resolverFotoVendedor(vendedor.foto)}
@@ -836,7 +849,7 @@ export default function LandingPage() {
         <div className="border-t border-white/10 py-4 text-xs text-slate-400">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 grid items-center gap-3 md:grid-cols-3">
             <p className="text-left">
-              � {new Date().getFullYear()} Valor Agro. Todos os direitos reservados.
+              © {new Date().getFullYear()} Valor Agro. Todos os direitos reservados.
             </p>
             <div className="flex justify-center">
               <img src={GRDADOS_LOGO_URL} alt="GR Dados" className="h-7 w-auto object-contain opacity-90" />
@@ -855,3 +868,4 @@ export default function LandingPage() {
     </div>
   )
 }
+
