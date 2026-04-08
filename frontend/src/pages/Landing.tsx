@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { FormEvent, MouseEvent, useEffect, useMemo, useRef, useState } from 'react'
 import {
   BarChart3,
   Bike,
@@ -44,6 +44,16 @@ interface LeadForm {
   mensagem: string
 }
 
+interface HeroCard {
+  titulo: string
+  imagem: string
+  top: string
+  right: string
+  width: string
+  height: string
+  depth: number
+}
+
 const MENU_ITEMS = [
   { id: 'inicio', label: 'Inicio' },
   { id: 'produtos', label: 'Produtos' },
@@ -71,6 +81,35 @@ const HERO_SLIDES = [
     imagem: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1400&q=80',
     bg: 'from-black via-[#0b1a0f] to-[#143420]',
     badge: 'Pessoa Fisica',
+    cards: [
+      {
+        titulo: 'Entrega de Carro',
+        imagem: 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?auto=format&fit=crop&w=900&q=80',
+        top: '18%',
+        right: '20%',
+        width: '220px',
+        height: '300px',
+        depth: 0.5,
+      },
+      {
+        titulo: 'Entrega de Moto',
+        imagem: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=900&q=80',
+        top: '48%',
+        right: '34%',
+        width: '170px',
+        height: '230px',
+        depth: 0.8,
+      },
+      {
+        titulo: 'Conquista da Casa',
+        imagem: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80',
+        top: '31%',
+        right: '6%',
+        width: '210px',
+        height: '280px',
+        depth: 1.1,
+      },
+    ] as HeroCard[],
   },
   {
     id: 'pj',
@@ -80,6 +119,35 @@ const HERO_SLIDES = [
     imagem: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1400&q=80',
     bg: 'from-black via-[#101910] to-[#1e4a2d]',
     badge: 'Pessoa Juridica',
+    cards: [
+      {
+        titulo: 'Investimento',
+        imagem: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=900&q=80',
+        top: '16%',
+        right: '18%',
+        width: '220px',
+        height: '300px',
+        depth: 0.5,
+      },
+      {
+        titulo: 'Reforma',
+        imagem: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=80',
+        top: '49%',
+        right: '33%',
+        width: '170px',
+        height: '230px',
+        depth: 0.85,
+      },
+      {
+        titulo: 'Frota Empresarial',
+        imagem: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=900&q=80',
+        top: '32%',
+        right: '5%',
+        width: '210px',
+        height: '280px',
+        depth: 1.1,
+      },
+    ] as HeroCard[],
   },
 ]
 
@@ -104,6 +172,7 @@ export default function LandingPage() {
   const [vendedores, setVendedores] = useState<PublicVendedor[]>([])
   const [carregandoVendedores, setCarregandoVendedores] = useState(true)
   const [heroAtivo, setHeroAtivo] = useState(0)
+  const [parallax, setParallax] = useState({ x: 0, y: 0 })
   const contatoRef = useRef<HTMLElement | null>(null)
   const [lead, setLead] = useState<LeadForm>({
     nome: '',
@@ -227,6 +296,17 @@ export default function LandingPage() {
     setHeroAtivo((atual) => (atual - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)
   }
 
+  const onHeroMouseMove = (e: MouseEvent<HTMLElement>) => {
+    const bounds = e.currentTarget.getBoundingClientRect()
+    const x = (e.clientX - bounds.left) / bounds.width
+    const y = (e.clientY - bounds.top) / bounds.height
+    setParallax({ x: x * 2 - 1, y: y * 2 - 1 })
+  }
+
+  const onHeroMouseLeave = () => {
+    setParallax({ x: 0, y: 0 })
+  }
+
   return (
     <div className="min-h-screen bg-[#f4f8f2] text-slate-900">
       <header
@@ -306,7 +386,12 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <section id="inicio" className="relative pt-24 pb-10 overflow-hidden min-h-[78vh] lg:min-h-[85vh]">
+      <section
+        id="inicio"
+        className="relative pt-24 pb-10 overflow-hidden min-h-[78vh] lg:min-h-[85vh]"
+        onMouseMove={onHeroMouseMove}
+        onMouseLeave={onHeroMouseLeave}
+      >
         {HERO_SLIDES.map((slide, idx) => (
           <div
             key={slide.id}
@@ -317,6 +402,33 @@ export default function LandingPage() {
           </div>
         ))}
         <div className="absolute inset-0 bg-black/35" />
+
+        <div className="absolute inset-0 hidden lg:block pointer-events-none">
+          {HERO_SLIDES[heroAtivo].cards.map((card, idx) => {
+            const tx = Math.round(parallax.x * 18 * card.depth)
+            const ty = Math.round(parallax.y * 14 * card.depth)
+            return (
+              <article
+                key={`${HERO_SLIDES[heroAtivo].id}-${card.titulo}`}
+                className="absolute rounded-2xl overflow-hidden border border-white/25 shadow-2xl bg-black/20 backdrop-blur-sm"
+                style={{
+                  top: card.top,
+                  right: card.right,
+                  width: card.width,
+                  height: card.height,
+                  transform: `translate3d(${tx}px, ${ty}px, 0)`,
+                  transition: 'transform 220ms ease-out, opacity 420ms ease',
+                }}
+              >
+                <img src={card.imagem} alt={card.titulo} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <p className="absolute left-3 bottom-2 text-[11px] font-semibold tracking-wide text-white/95">
+                  {card.titulo}
+                </p>
+              </article>
+            )
+          })}
+        </div>
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 h-full min-h-[calc(78vh-5rem)] lg:min-h-[calc(85vh-5rem)] flex items-center">
           <div className="max-w-xl text-white py-10 text-left">
@@ -375,6 +487,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
 
       <section id="produtos" className="py-16 bg-[#f8fbf7]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
