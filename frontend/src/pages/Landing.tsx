@@ -456,7 +456,7 @@ export default function LandingPage() {
         ))}
         <div className="absolute inset-0 bg-black/35" />
 
-        <div className="absolute inset-0 hidden lg:block pointer-events-none">
+        <div className="absolute inset-0 hidden xl:block pointer-events-none">
           <div className="relative mx-auto max-w-7xl h-full overflow-hidden">
             {HERO_SLIDES[heroAtivo].cards.map((card, idx) => {
               const tx = Math.round(parallax.x * 18 * card.depth)
@@ -486,19 +486,19 @@ export default function LandingPage() {
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 h-full min-h-[calc(78vh-5rem)] lg:min-h-[calc(85vh-5rem)] flex items-center">
-          <div className="max-w-xl text-white py-10 text-left">
+          <div className="max-w-xl md:max-w-2xl text-white py-10 text-center md:text-left mx-auto md:mx-0">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/20 border border-white/40 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
               <UserRound className="w-4 h-4" />
               {HERO_SLIDES[heroAtivo].badge}
             </span>
-            <h1 className="mt-4 text-3xl lg:text-5xl font-extrabold leading-tight drop-shadow-sm">
+            <h1 className="mt-4 text-2xl sm:text-3xl md:text-4xl lg:text-[3rem] font-extrabold leading-tight drop-shadow-sm">
               {HERO_SLIDES[heroAtivo].titulo}
             </h1>
-            <p className="mt-4 text-base lg:text-lg text-slate-100 max-w-xl">
+            <p className="mt-4 text-sm sm:text-base lg:text-lg text-slate-100 max-w-xl mx-auto md:mx-0">
               {HERO_SLIDES[heroAtivo].descricao}
             </p>
             <button
-              className="btn mt-6 bg-[#66e24d] text-[#041109] hover:bg-[#7bea63] font-semibold"
+              className="btn mt-6 bg-[#66e24d] text-[#041109] hover:bg-[#7bea63] font-semibold mx-auto md:mx-0"
               onClick={() => irParaSimulacao(HERO_SLIDES[heroAtivo].segmento)}
             >
               Simular Agora
@@ -506,7 +506,7 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 pointer-events-none hidden min-[661px]:block">
           <div className="h-full px-4 sm:px-6 flex items-center justify-between">
             <button
               onClick={anteriorHero}
