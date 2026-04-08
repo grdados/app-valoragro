@@ -10,7 +10,7 @@ class DadosEmpresaView(APIView):
     def get_permissions(self):
         if self.request.method in ("PUT", "PATCH"):
             return [permissions.IsAuthenticated(), IsSupervisorOrAbove()]
-        return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
 
     def get(self, request):
         obj = DadosEmpresa.objects.first()

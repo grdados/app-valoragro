@@ -119,7 +119,12 @@ export const vendedoresApi = {
 
 export const publicApi = {
   listVendedores: () => api.get('/public/vendedores/'),
-  getEmpresa: () => api.get('/public/empresa/'),
+  getEmpresa: () =>
+    api.get('/public/empresa/').catch((err: unknown) => {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status === 404 || status === 405) return api.get('/empresa/')
+      throw err
+    }),
 }
 
 export const tiposBemApi = {
