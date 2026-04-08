@@ -339,8 +339,8 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="absolute inset-y-0 left-0 right-0 pointer-events-none">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 flex items-center justify-between">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="h-full px-4 sm:px-6 flex items-center justify-between">
             <button
               onClick={anteriorHero}
               className="pointer-events-auto p-2.5 rounded-full border border-white/50 text-white hover:bg-white/20 transition-colors"
