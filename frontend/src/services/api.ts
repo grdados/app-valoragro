@@ -120,6 +120,14 @@ export const vendedoresApi = {
 export const publicApi = {
   listVendedores: () => api.get('/public/vendedores/'),
   getEmpresa: async () => {
+    // Tenta primeiro via cliente padrao (baseURL + token/interceptors)
+    try {
+      return await api.get('/public/empresa/')
+    } catch {}
+    try {
+      return await api.get('/empresa/')
+    } catch {}
+
     const envApiRaw = String(import.meta.env.VITE_API_URL || '').trim()
     const envApi = envApiRaw.replace(/\/+$/, '')
     const roots = new Set<string>()
@@ -137,9 +145,12 @@ export const publicApi = {
     }
 
     let lastError: unknown = null
+    const token = localStorage.getItem('access_token')
     for (const url of urls) {
       try {
-        return await axios.get(url)
+        return await axios.get(url, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        })
       } catch (err: unknown) {
         lastError = err
       }
