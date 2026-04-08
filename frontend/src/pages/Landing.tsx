@@ -404,7 +404,7 @@ export default function LandingPage() {
 
             <div className="flex items-center gap-2">
               <Link to="/login" className="btn hidden sm:inline-flex bg-[#66e24d] text-[#041109] hover:bg-[#7bea63] font-semibold">
-                Entrar no Painel
+                Login
               </Link>
               <button
                 className="lg:hidden p-2 rounded-lg border border-white/20 bg-[#0f1a12] text-white"
@@ -432,7 +432,7 @@ export default function LandingPage() {
                 </button>
               ))}
               <Link to="/login" className="btn justify-center mt-1 bg-[#66e24d] text-[#041109] hover:bg-[#7bea63] font-semibold">
-                Entrar no Painel
+                Login
               </Link>
             </div>
           </div>
