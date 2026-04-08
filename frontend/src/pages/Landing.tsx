@@ -458,35 +458,37 @@ export default function LandingPage() {
 
         <div className="absolute inset-0 hidden xl:block pointer-events-none">
           <div className="relative mx-auto max-w-7xl h-full overflow-hidden">
-            {HERO_SLIDES[heroAtivo].cards.map((card, idx) => {
-              const tx = Math.round(parallax.x * 18 * card.depth)
-              const ty = Math.round(parallax.y * 14 * card.depth)
-              return (
-                <article
-                  key={`${HERO_SLIDES[heroAtivo].id}-${card.titulo}`}
-                  className="absolute rounded-2xl overflow-hidden border border-white/25 shadow-2xl bg-black/20 backdrop-blur-sm"
-                  style={{
-                    top: card.top,
-                    right: card.right,
-                    width: card.width,
-                    height: card.height,
-                    transform: `translate3d(${tx}px, ${ty}px, 0) rotate(${card.rotate}deg)`,
-                    transition: 'transform 220ms ease-out, opacity 420ms ease',
-                  }}
-                >
-                  <img src={card.imagem} alt={card.titulo} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <p className="absolute left-3 bottom-2 text-[11px] font-semibold tracking-wide text-white/95">
-                    {card.titulo}
-                  </p>
-                </article>
-              )
-            })}
+            <div className="absolute inset-y-[12%] right-3 w-[44%] min-w-[460px] max-w-[610px]">
+              {HERO_SLIDES[heroAtivo].cards.map((card, idx) => {
+                const tx = Math.round(parallax.x * 18 * card.depth)
+                const ty = Math.round(parallax.y * 14 * card.depth)
+                return (
+                  <article
+                    key={`${HERO_SLIDES[heroAtivo].id}-${card.titulo}`}
+                    className="absolute rounded-2xl overflow-hidden border border-white/25 shadow-2xl bg-black/20 backdrop-blur-sm"
+                    style={{
+                      top: card.top,
+                      right: card.right,
+                      width: card.width,
+                      height: card.height,
+                      transform: `translate3d(${tx}px, ${ty}px, 0) rotate(${card.rotate}deg)`,
+                      transition: 'transform 220ms ease-out, opacity 420ms ease',
+                    }}
+                  >
+                    <img src={card.imagem} alt={card.titulo} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <p className="absolute left-3 bottom-2 text-[11px] font-semibold tracking-wide text-white/95">
+                      {card.titulo}
+                    </p>
+                  </article>
+                )
+              })}
+            </div>
           </div>
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 h-full min-h-[calc(78vh-5rem)] lg:min-h-[calc(85vh-5rem)] flex items-center">
-          <div className="max-w-xl md:max-w-2xl text-white py-10 text-center md:text-left mx-auto md:mx-0">
+          <div className="max-w-xl md:max-w-2xl xl:max-w-[620px] text-white py-10 text-center md:text-left mx-auto md:mx-0">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/20 border border-white/40 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
               <UserRound className="w-4 h-4" />
               {HERO_SLIDES[heroAtivo].badge}
