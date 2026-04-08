@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "https://valoragro.onrender.com/api/$1"
+    },
+    {
+      "source": "/admin/(.*)",
+      "destination": "https://valoragro.onrender.com/admin/$1"
+    },
+    {
+      "source": "/media/(.*)",
+      "destination": "https://valoragro.onrender.com/media/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
