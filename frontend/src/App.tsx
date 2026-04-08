@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthContext, useAuthProvider } from './hooks/useAuth'
 import Layout from './components/Layout'
@@ -28,10 +28,19 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
   const authValue = useAuthProvider()
+  const location = useLocation()
+  const isPainel = location.pathname.startsWith('/painel')
 
   return (
     <AuthContext.Provider value={authValue}>
-      <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
+      <Toaster
+        position="top-left"
+        containerStyle={{
+          top: 16,
+          left: isPainel ? 'max(16px, 220px)' : 16,
+        }}
+        toastOptions={{ duration: 4000 }}
+      />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
