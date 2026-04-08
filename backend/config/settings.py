@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "apps.relatorios",
     "apps.empresa",
     "apps.licencas",
+    "apps.backups",
 ]
 
 MIDDLEWARE = [

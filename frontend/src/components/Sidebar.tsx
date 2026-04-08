@@ -1,9 +1,23 @@
 import { NavLink } from 'react-router-dom'
 import {
-  LayoutDashboard, ShoppingCart, DollarSign, FileText,
-  Users, Building2, Package, Calendar, BarChart3,
-  ChevronLeft, ChevronRight, Settings, UserCheck, Layers,
-  UserCircle, Key, Shield
+  LayoutDashboard,
+  ShoppingCart,
+  DollarSign,
+  FileText,
+  Users,
+  Building2,
+  Package,
+  Calendar,
+  BarChart3,
+  ChevronLeft,
+  ChevronRight,
+  Settings,
+  UserCheck,
+  Layers,
+  UserCircle,
+  Key,
+  Shield,
+  Database,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { cn } from '../lib/utils'
@@ -35,6 +49,7 @@ const supervisorNav: NavItem[] = [
   { to: '/painel/cadastros/assembleias', icon: Calendar, label: 'Assembleias' },
   { to: '/painel/cadastros/faixas', icon: Layers, label: 'Faixas de Comissão' },
   { to: '/painel/empresa', icon: Package, label: 'Dados da Empresa' },
+  { to: '/painel/backups', icon: Database, label: 'Backups' },
   { to: '/painel/cadastros/usuarios', icon: Settings, label: 'Usuários' },
 ]
 

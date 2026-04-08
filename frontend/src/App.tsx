@@ -12,6 +12,7 @@ import RelatoriosPage from './pages/Relatorios'
 import ClientesPage from './pages/Clientes'
 import EmpresaPage from './pages/Empresa'
 import LicencasPage from './pages/Licencas'
+import BackupsPage from './pages/Backups'
 import CoordenadoresPage from './pages/cadastros/Coordenadores'
 import VendedoresPage from './pages/cadastros/Vendedores'
 import SupervisoresPage from './pages/cadastros/Supervisores'
@@ -60,6 +61,7 @@ function AppRoutes() {
           <Route path="relatorios" element={<RelatoriosPage />} />
           <Route path="clientes" element={<ClientesPage />} />
           <Route path="empresa" element={<EmpresaPage />} />
+          <Route path="backups" element={<BackupsPage />} />
           <Route path="licencas" element={<LicencasPage />} />
           <Route path="cadastros/supervisores" element={<SupervisoresPage />} />
           <Route path="cadastros/coordenadores" element={<CoordenadoresPage />} />
@@ -76,6 +78,7 @@ function AppRoutes() {
         <Route path="/relatorios" element={<Navigate to="/painel/relatorios" replace />} />
         <Route path="/clientes" element={<Navigate to="/painel/clientes" replace />} />
         <Route path="/empresa" element={<Navigate to="/painel/empresa" replace />} />
+        <Route path="/backups" element={<Navigate to="/painel/backups" replace />} />
         <Route path="/licencas" element={<Navigate to="/painel/licencas" replace />} />
         <Route path="/cadastros/supervisores" element={<Navigate to="/painel/cadastros/supervisores" replace />} />
         <Route path="/cadastros/coordenadores" element={<Navigate to="/painel/cadastros/coordenadores" replace />} />

@@ -238,3 +238,20 @@ export const licencasApi = {
   updatePagamento: (id: number, data: ApiPayload) => api.patch(`/dev/licencas-pagamentos/${id}/`, data),
   gerarFaturas: (id: number, meses: number) => api.post(`/dev/licencas/${id}/gerar-faturas/`, { meses }),
 }
+
+export const backupsApi = {
+  list: (params?: Record<string, unknown>) => api.get('/backups/', { params }),
+  getConfiguracao: () => api.get('/backups/configuracao/'),
+  salvarConfiguracao: (data: ApiPayload) => api.put('/backups/configuracao/', data),
+  gerarAgora: () => api.post('/backups/gerar/'),
+  processarAgendados: () => api.post('/backups/processar-agendados/'),
+  restaurarPorId: (backup_id: number) => api.post('/backups/restaurar/', { backup_id }),
+  restaurarUpload: (arquivo: File) => {
+    const formData = new FormData()
+    formData.append('arquivo', arquivo)
+    return api.post('/backups/restaurar/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
+  download: (id: number) => api.get(`/backups/${id}/download/`, { responseType: 'blob' }),
+}

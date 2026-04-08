@@ -282,3 +282,30 @@ export interface PagamentoLicenca {
   status: 'pago' | 'pendente' | 'vencido'
   observacao: string
 }
+
+export interface BackupSettings {
+  ativo: boolean
+  hora_execucao: string
+  manter_dias: number
+  ultima_execucao: string | null
+  proxima_execucao: string | null
+  atualizado_em: string | null
+}
+
+export interface BackupArquivo {
+  id: number
+  nome_arquivo: string
+  arquivo: string
+  download_url: string
+  tamanho_bytes: number
+  hash_sha256: string
+  origem: 'manual' | 'agendado' | 'upload'
+  origem_display: string
+  observacao: string
+  criado_por: number | null
+  criado_por_nome: string
+  restaurado_em: string | null
+  restaurado_por: number | null
+  restaurado_por_nome: string
+  criado_em: string
+}

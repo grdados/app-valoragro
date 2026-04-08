@@ -66,33 +66,33 @@ interface HeroCard {
 }
 
 const MENU_ITEMS = [
-  { id: 'inicio', label: 'Inicio' },
+  { id: 'inicio', label: 'Início' },
   { id: 'produtos', label: 'Produtos' },
   { id: 'especialista', label: 'Falar com Especialista' },
   { id: 'sobre', label: 'Sobre' },
-  { id: 'localizacao', label: 'Localizacao' },
+  { id: 'localizacao', label: 'Localização' },
   { id: 'contato', label: 'Contato' },
 ]
 
 const PRODUTOS = [
-  { nome: 'Imovel', descricao: 'Residencial, comercial e investimento.', icon: Home },
+  { nome: 'Imóvel', descricao: 'Residencial, comercial e investimento.', icon: Home },
   { nome: 'Carro', descricao: 'Novos e seminovos com planejamento.', icon: Car },
   { nome: 'Moto', descricao: 'Mobilidade com parcelas planejadas.', icon: Bike },
-  { nome: 'Caminhao', descricao: 'Renovacao de frota para empresas.', icon: Truck },
-  { nome: 'Empresarial', descricao: 'Solucoes para capital e expansao.', icon: Building2 },
-  { nome: 'Servicos', descricao: 'Projetos e despesas de alto valor.', icon: Handshake },
+  { nome: 'Caminhão', descricao: 'Renovação de frota para empresas.', icon: Truck },
+  { nome: 'Empresarial', descricao: 'Soluções para capital e expansão.', icon: Building2 },
+  { nome: 'Serviços', descricao: 'Projetos e despesas de alto valor.', icon: Handshake },
 ]
 
 const HERO_SLIDES = [
   {
     id: 'pf',
     segmento: 'pf' as Segmento,
-    titulo: 'Consorcio para Pessoa Fisica com planejamento e atendimento humano.',
-    tituloLinhas: ['Consorcio para Pessoa Fisica', 'com planejamento e', 'atendimento humano.'],
-    descricao: 'Organize sua conquista com simulacao orientada para imovel, carro, moto e servicos.',
+    titulo: 'Consórcio com planejamento e atendimento humano.',
+    tituloLinhas: ['Consórcio', 'com planejamento e', 'atendimento humano.'],
+    descricao: 'Organize sua conquista com simulação orientada para imóvel, carro, moto e serviços.',
     imagem: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1400&q=80',
     bg: 'from-black via-[#0b1a0f] to-[#143420]',
-    badge: 'Pessoa Fisica',
+    badge: 'Pessoa Física',
     cards: [
       {
         titulo: 'Entrega de Carro',
@@ -129,12 +129,12 @@ const HERO_SLIDES = [
   {
     id: 'pj',
     segmento: 'pj' as Segmento,
-    titulo: 'Consorcio para Pessoa Juridica com foco em crescimento e previsibilidade.',
-    tituloLinhas: ['Consorcio para Pessoa Juridica', 'com foco em crescimento e', 'previsibilidade.'],
-    descricao: 'Apoio comercial para renovacao de frota, ativos estrategicos e servicos empresariais.',
+    titulo: 'Consórcio com foco em crescimento e previsibilidade.',
+    tituloLinhas: ['Consórcio', 'com foco em crescimento e', 'previsibilidade.'],
+    descricao: 'Apoio comercial para renovação de frota, ativos estratégicos e serviços empresariais.',
     imagem: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1400&q=80',
     bg: 'from-black via-[#101910] to-[#1e4a2d]',
-    badge: 'Pessoa Juridica',
+    badge: 'Pessoa Jurídica',
     cards: [
       {
         titulo: 'Investimento',
@@ -218,7 +218,7 @@ export default function LandingPage() {
     telefone: '',
     email: '',
     tipoPessoa: 'pf',
-    interesse: 'Consorcio de imovel',
+    interesse: 'Consórcio de imóvel',
     vendedorId: '',
     mensagem: '',
   })
@@ -227,7 +227,7 @@ export default function LandingPage() {
     .filter(Boolean)
     .join(', ')
     .trim()
-  const localLabel = [empresa?.cidade, empresa?.uf].filter(Boolean).join(' - ') || 'Cuiaba - MT'
+  const localLabel = [empresa?.cidade, empresa?.uf].filter(Boolean).join(' - ') || 'Cuiabá - MT'
   const telefoneEmpresa = empresa?.telefone || '+55 (65) 0000-0000'
   const emailEmpresa = empresa?.email || 'contato@valoragro.com.br'
   const mapaQuery = encodeURIComponent(enderecoCompleto || localLabel)
@@ -285,7 +285,7 @@ export default function LandingPage() {
         }))
       })
       .catch(() => {
-        toast.error('Nao foi possivel carregar os especialistas no momento.')
+        toast.error('Não foi possível carregar os especialistas no momento.')
       })
       .finally(() => setCarregandoVendedores(false))
   }, [])
@@ -317,14 +317,14 @@ export default function LandingPage() {
 
     const especialista = vendedorSelecionado
     if (!especialista) {
-      toast.error('Especialista nao encontrado.')
+      toast.error('Especialista não encontrado.')
       return
     }
 
     const texto = [
-      'Ola, quero simular um consorcio na Valor Agro.',
+      'Olá, quero simular um consórcio na Valor Agro.',
       `Nome: ${lead.nome}`,
-      `Tipo de cliente: ${lead.tipoPessoa === 'pf' ? 'Pessoa Fisica' : 'Pessoa Juridica'}`,
+      `Tipo de cliente: ${lead.tipoPessoa === 'pf' ? 'Pessoa Física' : 'Pessoa Jurídica'}`,
       `Interesse: ${lead.interesse}`,
       `Telefone: ${lead.telefone}`,
       lead.email ? `Email: ${lead.email}` : null,
@@ -336,7 +336,7 @@ export default function LandingPage() {
 
     const ok = abrirWhatsapp(especialista.telefone, texto)
     if (!ok) {
-      toast.error('Telefone do especialista indisponivel para WhatsApp.')
+      toast.error('Telefone do especialista indisponível para WhatsApp.')
       return
     }
 
@@ -527,7 +527,7 @@ export default function LandingPage() {
             <button
               onClick={proximoHero}
               className="pointer-events-auto p-2.5 rounded-full border border-white/50 text-white hover:bg-white/20 transition-colors"
-              aria-label="Proximo slide"
+              aria-label="Próximo slide"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -557,7 +557,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto">
             <h2 className="text-3xl font-extrabold">Produtos</h2>
-            <p className="mt-2 text-slate-600">Escolha o tipo de consorcio alinhado ao seu objetivo.</p>
+            <p className="mt-2 text-slate-600">Escolha o tipo de consórcio alinhado ao seu objetivo.</p>
           </div>
           <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {PRODUTOS.map((produto, idx) => {
@@ -597,7 +597,7 @@ export default function LandingPage() {
           <div className="text-center max-w-2xl mx-auto">
             <h2 className="text-3xl font-extrabold text-white">Falar com Especialista</h2>
             <p className="mt-2 text-emerald-100/90">
-              Time comercial com conhecimento de consorcios BB para apoiar PF e PJ.
+              Time comercial com conhecimento de consórcios BB para apoiar PF e PJ.
             </p>
           </div>
           <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -608,7 +608,7 @@ export default function LandingPage() {
             )}
             {!carregandoVendedores && vendedores.length === 0 && (
               <div className="sm:col-span-2 lg:col-span-3 rounded-xl border border-white/25 bg-white/15 backdrop-blur-md p-8 text-center text-white">
-                Nenhum especialista disponivel no momento.
+                Nenhum especialista disponível no momento.
               </div>
             )}
             {vendedores.map((vendedor) => (
@@ -626,14 +626,14 @@ export default function LandingPage() {
                 </div>
                 <div className="p-5">
                   <h3 className="font-bold text-lg">{vendedor.nome}</h3>
-                  <p className="text-sm text-slate-600">{vendedor.cidade || 'Cidade nao informada'}{vendedor.uf ? ` - ${vendedor.uf}` : ''}</p>
+                  <p className="text-sm text-slate-600">{vendedor.cidade || 'Cidade não informada'}{vendedor.uf ? ` - ${vendedor.uf}` : ''}</p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <button
                       className="btn bg-[#1f8c3b] text-white hover:bg-[#1a7531]"
                       onClick={() =>
                         abrirWhatsapp(
                           vendedor.telefone,
-                          `Ola ${vendedor.nome}, quero simular um consorcio pela landing da Valor Agro.`
+                          `Olá ${vendedor.nome}, quero simular um consórcio pela landing da Valor Agro.`
                         )
                       }
                     >
@@ -655,8 +655,8 @@ export default function LandingPage() {
           <div>
             <h2 className="text-3xl font-extrabold">Sobre a Valor Agro</h2>
             <p className="mt-3 text-slate-600">
-              A Valor Agro integra tecnologia e atendimento humano para acelerar vendas de consorcios BB.
-              Nosso foco e organizar operacao comercial, comissoes e acompanhamento de carteira em um unico painel.
+              A Valor Agro integra tecnologia e atendimento humano para acelerar vendas de consórcios BB.
+              Nosso foco é organizar operação comercial, comissões e acompanhamento de carteira em um único painel.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 text-sm">
@@ -666,14 +666,14 @@ export default function LandingPage() {
                 <Handshake className="w-4 h-4 text-[#1f8c3b]" /> Atendimento consultivo
               </span>
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 text-sm">
-                <BarChart3 className="w-4 h-4 text-[#1f8c3b]" /> Gestao orientada a dados
+                <BarChart3 className="w-4 h-4 text-[#1f8c3b]" /> Gestão orientada a dados
               </span>
             </div>
           </div>
           <div className="card p-6 bg-[linear-gradient(135deg,#050806,#153121)] text-white border-0">
             <h3 className="text-xl font-bold">Compromisso</h3>
             <p className="mt-2 text-blue-100">
-              Entregar suporte rapido, simulacoes assertivas e visao completa para sua equipe comercial.
+              Entregar suporte rápido, simulações assertivas e visão completa para sua equipe comercial.
             </p>
             <div className="mt-4 grid sm:grid-cols-3 gap-3 text-center">
               <div className="rounded-lg bg-white/10 p-3">
@@ -682,11 +682,11 @@ export default function LandingPage() {
               </div>
               <div className="rounded-lg bg-white/10 p-3">
                 <p className="text-2xl font-extrabold">PJ</p>
-                <p className="text-xs text-blue-100">Solucoes empresariais</p>
+                <p className="text-xs text-blue-100">Soluções empresariais</p>
               </div>
               <div className="rounded-lg bg-white/10 p-3">
                 <p className="text-2xl font-extrabold">BB</p>
-                <p className="text-xs text-blue-100">Consorcios e servicos</p>
+                <p className="text-xs text-blue-100">Consórcios e serviços</p>
               </div>
             </div>
           </div>
@@ -706,7 +706,7 @@ export default function LandingPage() {
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6">
           <div className="max-w-xl rounded-2xl border border-white/70 bg-white/85 p-6 shadow-lg backdrop-blur-sm">
-            <h2 className="text-3xl font-extrabold">Localizacao</h2>
+            <h2 className="text-3xl font-extrabold">Localização</h2>
             <p className="mt-3 text-slate-600">
               Atendimento digital para todo Brasil com apoio da base operacional cadastrada no sistema.
             </p>
@@ -727,7 +727,7 @@ export default function LandingPage() {
       <section id="contato" ref={contatoRef} className="py-16 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="max-w-2xl">
-            <h2 className="text-3xl font-extrabold">Contato e Simulacao</h2>
+            <h2 className="text-3xl font-extrabold">Contato e Simulação</h2>
             <p className="mt-2 text-slate-600">
               Preencha os dados e fale direto com um vendedor cadastrado no sistema.
             </p>
@@ -768,14 +768,14 @@ export default function LandingPage() {
                   onClick={() => setLead((prev) => ({ ...prev, tipoPessoa: 'pf' }))}
                   className={`btn ${lead.tipoPessoa === 'pf' ? 'bg-[#1f8c3b] text-white' : 'bg-white border border-slate-300'}`}
                 >
-                  Pessoa Fisica
+                  Pessoa Física
                 </button>
                 <button
                   type="button"
                   onClick={() => setLead((prev) => ({ ...prev, tipoPessoa: 'pj' }))}
                   className={`btn ${lead.tipoPessoa === 'pj' ? 'bg-[#1f8c3b] text-white' : 'bg-white border border-slate-300'}`}
                 >
-                  Pessoa Juridica
+                  Pessoa Jurídica
                 </button>
               </div>
             </div>
@@ -786,11 +786,11 @@ export default function LandingPage() {
                 value={lead.interesse}
                 onChange={(e) => setLead((prev) => ({ ...prev, interesse: e.target.value }))}
               >
-                <option>Consorcio de imovel</option>
-                <option>Consorcio de carro</option>
-                <option>Consorcio de moto</option>
-                <option>Consorcio empresarial</option>
-                <option>Outros servicos</option>
+                <option>Consórcio de imóvel</option>
+                <option>Consórcio de carro</option>
+                <option>Consórcio de moto</option>
+                <option>Consórcio empresarial</option>
+                <option>Outros serviços</option>
               </select>
             </div>
             <div>
@@ -801,7 +801,7 @@ export default function LandingPage() {
                 onChange={(e) => setLead((prev) => ({ ...prev, vendedorId: e.target.value }))}
                 disabled={carregandoVendedores || vendedores.length === 0}
               >
-                {vendedores.length === 0 && <option value="">Nenhum especialista disponivel</option>}
+                {vendedores.length === 0 && <option value="">Nenhum especialista disponível</option>}
                 {vendedores.map((vendedor) => (
                   <option key={vendedor.id} value={vendedor.id}>
                     {vendedor.nome} {vendedor.cidade ? `- ${vendedor.cidade}` : ''}
@@ -815,7 +815,7 @@ export default function LandingPage() {
                 className="input min-h-[110px]"
                 value={lead.mensagem}
                 onChange={(e) => setLead((prev) => ({ ...prev, mensagem: e.target.value }))}
-                placeholder="Conte o objetivo da simulacao e prazo desejado."
+                placeholder="Conte o objetivo da simulação e o prazo desejado."
               />
             </div>
             <div className="md:col-span-2 flex flex-wrap gap-3">
@@ -835,7 +835,7 @@ export default function LandingPage() {
           <div>
             <img src={LOGO_URL} alt="Valor Agro" className="h-12 w-auto rounded-md object-contain ring-1 ring-white/15" />
             <p className="text-sm mt-2">
-              Plataforma para gestao de vendas e comissoes de consorcios BB, com atendimento para PF e PJ.
+              Plataforma para gestão de vendas e comissões de consórcios BB, com atendimento para PF e PJ.
             </p>
           </div>
           <div>
@@ -869,7 +869,7 @@ export default function LandingPage() {
               rel="noopener noreferrer"
               className="text-left md:text-right hover:text-white transition-colors"
             >
-              GR Dados Businnes Inteligence | whatssap (67) 99869-8159
+              GR Dados Business Intelligence | WhatsApp (67) 99869-8159
             </a>
           </div>
         </div>
