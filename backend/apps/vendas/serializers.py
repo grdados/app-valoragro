@@ -45,9 +45,21 @@ class VendaPreviewSerializer(serializers.Serializer):
         tipo_bem = attrs["tipo_bem"]
         valor_bem = attrs["valor_bem"]
 
+        consorcios_base = Consorcio.objects.filter(
+            coban__sigla=coban,
+            tipo_bem__nome=tipo_bem,
+            vigencia_inicio__lte=data_venda,
+            vigencia_fim__gte=data_venda,
+            ativo=True,
+        )
+
         faixa, consorcios = identificar_faixa(coban, tipo_bem, valor_bem, data_venda)
 
         if not consorcios:
+            if consorcios_base.exists():
+                raise serializers.ValidationError(
+                    "Consórcio encontrado, mas sem faixa de comissão para o valor informado."
+                )
             raise serializers.ValidationError(
                 "Nenhum consórcio encontrado para os parâmetros informados."
             )

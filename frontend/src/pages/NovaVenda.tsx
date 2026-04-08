@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { ArrowLeft, Search, ChevronRight } from 'lucide-react'
@@ -38,6 +38,17 @@ export default function NovaVendaPage() {
 
   const watchedStep = watch('data_venda')
 
+  const showWarningToast = (message: string) => {
+    toast(message, {
+      icon: '⚠️',
+      style: {
+        background: '#fff8db',
+        color: '#7a5400',
+        border: '1px solid #f7d774',
+      },
+    })
+  }
+
   useEffect(() => {
     Promise.all([
       vendedoresApi.list({ ativo: true }),
@@ -55,13 +66,13 @@ export default function NovaVendaPage() {
   const handlePreview = async () => {
     const [data_venda, coban_id, tipo_bem_id, valor_bem] = getValues(['data_venda', 'coban', 'tipo_bem', 'valor_bem'])
     if (!data_venda || !coban_id || !tipo_bem_id || !valor_bem) {
-      toast.error('Preencha todos os campos para buscar consórcios')
+      toast.error('Preencha todos os campos para buscar consÃ³rcios')
       return
     }
     const cobanObj = cobans.find(c => c.id === Number(coban_id))
     const tipoBemObj = tiposBem.find(t => t.id === Number(tipo_bem_id))
     if (!cobanObj || !tipoBemObj) {
-      toast.error('COBAN ou Tipo de Bem inválido')
+      toast.error('COBAN ou Tipo de Bem invÃ¡lido')
       return
     }
     setPreviewing(true)
@@ -72,12 +83,17 @@ export default function NovaVendaPage() {
       setPlano([])
       setStep(2)
       if (res.data.consorcios_disponiveis.length === 0) {
-        toast.error('Nenhum consórcio disponível para os parâmetros informados')
+        toast.error('Nenhum consÃ³rcio disponÃ­vel para os parÃ¢metros informados')
       }
     } catch (err: unknown) {
       const error = err as { response?: { data?: Record<string, string[]> } }
       const msg = Object.values(error?.response?.data || {}).flat()[0] || 'Erro ao buscar consórcios'
-      toast.error(String(msg))
+      const message = String(msg)
+      if (message.includes('sem faixa de comiss')) {
+        showWarningToast(message)
+      } else {
+        toast.error(message)
+      }
     } finally {
       setPreviewing(false)
     }
@@ -103,7 +119,7 @@ export default function NovaVendaPage() {
 
   const onSubmit = async (data: FormData) => {
     if (!selectedConsorcio) {
-      toast.error('Selecione um consórcio')
+      toast.error('Selecione um consÃ³rcio')
       return
     }
     setSaving(true)
@@ -114,7 +130,7 @@ export default function NovaVendaPage() {
         consorcio: selectedConsorcio,
       })
       await comissoesApi.gerar(vendaRes.data.id)
-      toast.success('Venda registrada e comissões geradas!')
+      toast.success('Venda registrada e comissÃµes geradas!')
       navigate('/painel/vendas')
     } catch (err: unknown) {
       const error = err as { response?: { data?: Record<string, string[]> } }
@@ -129,7 +145,7 @@ export default function NovaVendaPage() {
     <div className="space-y-6 max-w-4xl mx-auto">
       <PageHeader
         title="Nova Venda"
-        subtitle="Registre uma nova venda de consórcio"
+        subtitle="Registre uma nova venda de consÃ³rcio"
         actions={
           <button onClick={() => navigate('/painel/vendas')} className="btn-secondary">
             <ArrowLeft className="w-4 h-4" />
@@ -139,7 +155,7 @@ export default function NovaVendaPage() {
       />
 
       <div className="flex items-center gap-2 mb-4 text-sm">
-        {[{ n: 1, label: 'Dados da Venda' }, { n: 2, label: 'Selecionar Consórcio' }, { n: 3, label: 'Confirmar' }].map((s, i) => (
+        {[{ n: 1, label: 'Dados da Venda' }, { n: 2, label: 'Selecionar ConsÃ³rcio' }, { n: 3, label: 'Confirmar' }].map((s, i) => (
           <div key={s.n} className="flex items-center gap-2">
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${step >= s.n ? 'bg-[#1B4F8C] text-white' : 'bg-gray-100 text-gray-400'}`}>
               <span>{s.n}</span>
@@ -157,19 +173,19 @@ export default function NovaVendaPage() {
             <div>
               <label className="label">Data da Venda *</label>
               <input type="date" {...register('data_venda', { required: true })} className="input" />
-              {errors.data_venda && <p className="text-red-500 text-xs mt-1">Campo obrigatório</p>}
+              {errors.data_venda && <p className="text-red-500 text-xs mt-1">Campo obrigatÃ³rio</p>}
             </div>
             <div>
-              <label className="label">Número do Contrato *</label>
+              <label className="label">NÃºmero do Contrato *</label>
               <input {...register('numero_contrato', { required: true })} className="input" placeholder="Ex: CTR-2024-001" />
-              {errors.numero_contrato && <p className="text-red-500 text-xs mt-1">Campo obrigatório</p>}
+              {errors.numero_contrato && <p className="text-red-500 text-xs mt-1">Campo obrigatÃ³rio</p>}
             </div>
             <div>
               <label className="label">Cliente</label>
               <select {...register('cliente', { valueAsNumber: true })} className="input">
                 <option value="">Selecione o cliente (opcional)</option>
                 {clientes.map((c) => (
-                  <option key={c.id} value={c.id}>{c.nome} — {c.cpf}</option>
+                  <option key={c.id} value={c.id}>{c.nome} â€” {c.cpf}</option>
                 ))}
               </select>
             </div>
@@ -181,46 +197,46 @@ export default function NovaVendaPage() {
                   <option key={v.id} value={v.id}>{v.nome}</option>
                 ))}
               </select>
-              {errors.vendedor && <p className="text-red-500 text-xs mt-1">Campo obrigatório</p>}
+              {errors.vendedor && <p className="text-red-500 text-xs mt-1">Campo obrigatÃ³rio</p>}
             </div>
             <div>
               <label className="label">COBAN *</label>
               <select {...register('coban', { required: true, valueAsNumber: true })} className="input">
                 <option value="">Selecione o COBAN</option>
                 {cobans.filter(c => c.ativo).map((c) => (
-                  <option key={c.id} value={c.id}>{c.sigla} — {c.descricao}</option>
+                  <option key={c.id} value={c.id}>{c.sigla} â€” {c.descricao}</option>
                 ))}
               </select>
-              {errors.coban && <p className="text-red-500 text-xs mt-1">Campo obrigatório</p>}
+              {errors.coban && <p className="text-red-500 text-xs mt-1">Campo obrigatÃ³rio</p>}
             </div>
             <div>
               <label className="label">Tipo do Bem *</label>
               <select {...register('tipo_bem', { required: true, valueAsNumber: true })} className="input">
                 <option value="">Selecione o tipo</option>
                 {tiposBem.filter(t => t.ativo).map((t) => (
-                  <option key={t.id} value={t.id}>{t.nome_display}</option>
+                  <option key={t.id} value={t.id}>{t.descricao?.trim() || t.nome_display}</option>
                 ))}
               </select>
-              {errors.tipo_bem && <p className="text-red-500 text-xs mt-1">Campo obrigatório</p>}
+              {errors.tipo_bem && <p className="text-red-500 text-xs mt-1">Campo obrigatÃ³rio</p>}
             </div>
             <div>
               <label className="label">Valor do Bem (R$) *</label>
               <input type="number" step="0.01" min="0" {...register('valor_bem', { required: true, min: 1 })} className="input" placeholder="0,00" />
-              {errors.valor_bem && <p className="text-red-500 text-xs mt-1">Campo obrigatório</p>}
+              {errors.valor_bem && <p className="text-red-500 text-xs mt-1">Campo obrigatÃ³rio</p>}
             </div>
           </div>
 
           <div className="flex justify-end pt-2">
             <button type="button" onClick={handlePreview} disabled={previewing} className="btn-primary">
               <Search className="w-4 h-4" />
-              {previewing ? 'Buscando...' : 'Buscar Consórcios'}
+              {previewing ? 'Buscando...' : 'Buscar ConsÃ³rcios'}
             </button>
           </div>
         </div>
 
         {consorcios.length > 0 && (
           <div className="card p-6 space-y-4 mt-4">
-            <h2 className="text-base font-semibold text-gray-900">Selecione o Consórcio</h2>
+            <h2 className="text-base font-semibold text-gray-900">Selecione o ConsÃ³rcio</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {consorcios.map((c) => (
                 <button
@@ -230,7 +246,7 @@ export default function NovaVendaPage() {
                   className={`p-4 rounded-xl border-2 text-left transition-all ${selectedConsorcio === c.id ? 'border-[#1B4F8C] bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}
                 >
                   <p className="font-medium text-gray-900">{c.nome}</p>
-                  <p className="text-xs text-gray-500 mt-1">{c.qtd_parcelas} parcelas de comissão</p>
+                  <p className="text-xs text-gray-500 mt-1">{c.qtd_parcelas} parcelas de comissÃ£o</p>
                 </button>
               ))}
             </div>
@@ -240,9 +256,9 @@ export default function NovaVendaPage() {
         {plano.length > 0 && (
           <div className="card p-6 space-y-4 mt-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-gray-900">Plano de Comissões</h2>
+              <h2 className="text-base font-semibold text-gray-900">Plano de ComissÃµes</h2>
               <div className="text-right">
-                <p className="text-xs text-gray-500">Total de Comissões</p>
+                <p className="text-xs text-gray-500">Total de ComissÃµes</p>
                 <p className="text-lg font-bold text-emerald-600">{formatCurrency(totalComissao)}</p>
               </div>
             </div>
@@ -253,7 +269,7 @@ export default function NovaVendaPage() {
                     <th className="px-4 py-2 text-left">Parcela</th>
                     <th className="px-4 py-2 text-left">Vencimento</th>
                     <th className="px-4 py-2 text-right">Percentual</th>
-                    <th className="px-4 py-2 text-right">Valor Comissão</th>
+                    <th className="px-4 py-2 text-right">Valor ComissÃ£o</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -270,7 +286,7 @@ export default function NovaVendaPage() {
             </div>
             <div className="flex justify-end pt-2">
               <button type="submit" disabled={saving} className="btn-success px-6">
-                {saving ? 'Salvando...' : 'Confirmar e Gerar Comissões'}
+                {saving ? 'Salvando...' : 'Confirmar e Gerar ComissÃµes'}
               </button>
             </div>
           </div>
@@ -279,3 +295,4 @@ export default function NovaVendaPage() {
     </div>
   )
 }
+
