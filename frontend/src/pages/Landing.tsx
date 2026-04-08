@@ -153,6 +153,23 @@ const HERO_SLIDES = [
 
 const LOGO_URL = '/brand/logo-valor-agro.jpg'
 
+function resolverFotoVendedor(foto?: string) {
+  const fallback = 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=900&q=80'
+  if (!foto) return fallback
+
+  const valor = foto.trim().replace(/\\/g, '/')
+  if (!valor) return fallback
+  if (/^https?:\/\//i.test(valor)) return valor
+
+  if (valor.startsWith('/')) {
+    const api = String(import.meta.env.VITE_API_URL || '').trim()
+    const base = api ? api.replace(/\/api\/?$/i, '') : 'https://valoragro.onrender.com'
+    return `${base}${valor}`
+  }
+
+  return valor
+}
+
 function normalizarTelefone(valor: string) {
   return valor.replace(/\D/g, '')
 }
@@ -539,9 +556,13 @@ export default function LandingPage() {
               <article key={vendedor.id} className="card overflow-hidden">
                 <div className="h-44 bg-slate-200">
                   <img
-                    src={vendedor.foto || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=900&q=80'}
+                    src={resolverFotoVendedor(vendedor.foto)}
                     alt={vendedor.nome}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      ;(e.currentTarget as HTMLImageElement).src =
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(vendedor.nome)}&background=1f8c3b&color=fff&size=256`
+                    }}
                   />
                 </div>
                 <div className="p-5">
