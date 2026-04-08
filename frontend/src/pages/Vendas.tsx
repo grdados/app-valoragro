@@ -31,6 +31,10 @@ export default function VendasPage() {
   const [parcelas, setParcelas] = useState<ParcelaComissao[]>([])
   const [gerandoComissoes, setGerandoComissoes] = useState(false)
   const [alterandoStatus, setAlterandoStatus] = useState(false)
+  const [vendaParaExcluir, setVendaParaExcluir] = useState<Venda | null>(null)
+  const [comissoesPagas, setComissoesPagas] = useState(0)
+  const [carregandoValidacaoExclusao, setCarregandoValidacaoExclusao] = useState(false)
+  const [excluindoVenda, setExcluindoVenda] = useState(false)
 
   useEffect(() => { fetchVendas() }, [])
 
@@ -87,20 +91,42 @@ export default function VendasPage() {
     }
   }
 
-  const handleDeleteVenda = async (venda: Venda) => {
-    const confirmado = confirm(`Deseja remover a venda "${venda.numero_contrato}"?`)
-    if (!confirmado) return
+  const handleSolicitarExclusao = async (venda: Venda) => {
+    setVendaParaExcluir(venda)
+    setCarregandoValidacaoExclusao(true)
+    setComissoesPagas(0)
     try {
-      await vendasApi.remove(venda.id)
+      const res = await comissoesApi.list({ venda: venda.id, status: 'pago' })
+      const parcelasPagas = res.data.results || res.data || []
+      setComissoesPagas(Array.isArray(parcelasPagas) ? parcelasPagas.length : 0)
+    } catch {
+      setComissoesPagas(0)
+    } finally {
+      setCarregandoValidacaoExclusao(false)
+    }
+  }
+
+  const handleDeleteVenda = async () => {
+    if (!vendaParaExcluir) return
+    if (comissoesPagas > 0) {
+      toast.error('Não é possível remover: há comissões pagas. Estorne os pagamentos antes de excluir.')
+      return
+    }
+    setExcluindoVenda(true)
+    try {
+      await vendasApi.remove(vendaParaExcluir.id)
       toast.success('Venda removida com sucesso!')
-      if (selected?.id === venda.id) {
+      if (selected?.id === vendaParaExcluir.id) {
         setSelected(null)
         setParcelas([])
       }
+      setVendaParaExcluir(null)
       await fetchVendas()
     } catch (err: unknown) {
       const error = err as { response?: { data?: { detail?: string } } }
       toast.error(error?.response?.data?.detail || 'Não foi possível remover a venda')
+    } finally {
+      setExcluindoVenda(false)
     }
   }
 
@@ -147,7 +173,7 @@ export default function VendasPage() {
         actions={(row) => (
           <div className="flex items-center gap-2 justify-end">
             {canDeleteVenda && (
-              <button onClick={() => handleDeleteVenda(row)} className="btn-danger py-1.5 px-2.5 text-xs" title="Remover venda">
+              <button onClick={() => handleSolicitarExclusao(row)} className="btn-danger py-1.5 px-2.5 text-xs" title="Remover venda">
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             )}
@@ -234,6 +260,58 @@ export default function VendasPage() {
             </div>
           </div>
         )}
+      </Modal>
+
+      <Modal
+        open={!!vendaParaExcluir}
+        onClose={() => { if (!excluindoVenda) setVendaParaExcluir(null) }}
+        title="Confirmar remoção de venda"
+      >
+        <div className="space-y-4 text-sm text-gray-700">
+          <p>
+            Você está removendo a venda <strong>{vendaParaExcluir?.numero_contrato}</strong>.
+          </p>
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <p className="font-medium text-amber-800 mb-2">Impactos da remoção:</p>
+            <ul className="list-disc pl-5 space-y-1 text-amber-800">
+              <li>Todas as comissões vinculadas a esta venda serão removidas.</li>
+              <li>Histórico e vínculo da venda com cliente/vendedor serão excluídos.</li>
+              <li>A ação é irreversível sem restauração de backup.</li>
+            </ul>
+          </div>
+
+          {carregandoValidacaoExclusao ? (
+            <p className="text-gray-500">Validando comissões pagas...</p>
+          ) : comissoesPagas > 0 ? (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-700">
+              Não é possível remover esta venda porque existem <strong>{comissoesPagas}</strong> comissões pagas.
+              Estorne os pagamentos para continuar.
+            </div>
+          ) : (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
+              Nenhuma comissão paga encontrada. A remoção está liberada.
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setVendaParaExcluir(null)}
+              className="btn-secondary"
+              disabled={excluindoVenda}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteVenda}
+              className="btn-danger"
+              disabled={carregandoValidacaoExclusao || comissoesPagas > 0 || excluindoVenda}
+            >
+              {excluindoVenda ? 'Removendo...' : 'Confirmar remoção'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   )

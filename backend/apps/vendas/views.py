@@ -2,6 +2,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from apps.accounts.permissions import IsAdminOrCoordenador
+from apps.comissoes.models import ParcelaComissao
 from .models import Venda
 from .serializers import VendaSerializer, VendaPreviewSerializer, AlterarStatusVendaSerializer
 
@@ -70,6 +71,22 @@ class VendaViewSet(viewsets.ModelViewSet):
         if self.action in ("destroy", "update", "partial_update", "alterar_status"):
             return [permissions.IsAuthenticated(), IsAdminOrCoordenador()]
         return [permissions.IsAuthenticated()]
+
+    def destroy(self, request, *args, **kwargs):
+        venda = self.get_object()
+        possui_comissao_paga = ParcelaComissao.objects.filter(
+            venda=venda,
+            status="pago",
+        ).exists()
+        if possui_comissao_paga:
+            return Response(
+                {
+                    "detail": "Não é possível remover a venda: existem comissões pagas. "
+                    "Faça o estorno dos pagamentos antes de excluir."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().destroy(request, *args, **kwargs)
 
     @action(detail=True, methods=["patch"], url_path="status")
     def alterar_status(self, request, pk=None):
