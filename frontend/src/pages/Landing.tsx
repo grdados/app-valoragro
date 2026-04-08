@@ -96,30 +96,30 @@ const HERO_SLIDES = [
       {
         titulo: 'Entrega de Carro',
         imagem: 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?auto=format&fit=crop&w=900&q=80',
-        top: '20%',
-        right: '23%',
-        width: '240px',
-        height: '300px',
+        top: '12%',
+        right: '34%',
+        width: '220px',
+        height: '280px',
         depth: 0.5,
         rotate: -5,
       },
       {
         titulo: 'Entrega de Moto',
         imagem: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=900&q=80',
-        top: '50%',
-        right: '36%',
-        width: '155px',
-        height: '205px',
+        top: '58%',
+        right: '49%',
+        width: '150px',
+        height: '195px',
         depth: 0.8,
         rotate: 7,
       },
       {
         titulo: 'Conquista da Casa',
         imagem: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80',
-        top: '35%',
-        right: '13%',
-        width: '195px',
-        height: '250px',
+        top: '38%',
+        right: '8%',
+        width: '205px',
+        height: '255px',
         depth: 1.1,
         rotate: 3,
       },
@@ -137,30 +137,30 @@ const HERO_SLIDES = [
       {
         titulo: 'Investimento',
         imagem: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=900&q=80',
-        top: '20%',
-        right: '24%',
-        width: '238px',
-        height: '300px',
+        top: '12%',
+        right: '34%',
+        width: '220px',
+        height: '280px',
         depth: 0.5,
         rotate: -6,
       },
       {
         titulo: 'Reforma',
         imagem: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=80',
-        top: '49%',
-        right: '35%',
-        width: '150px',
-        height: '200px',
+        top: '58%',
+        right: '49%',
+        width: '145px',
+        height: '190px',
         depth: 0.85,
         rotate: 8,
       },
       {
         titulo: 'Frota Empresarial',
         imagem: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=900&q=80',
-        top: '34%',
-        right: '13%',
-        width: '195px',
-        height: '248px',
+        top: '38%',
+        right: '8%',
+        width: '205px',
+        height: '255px',
         depth: 1.1,
         rotate: 2,
       },
@@ -458,10 +458,10 @@ export default function LandingPage() {
 
         <div className="absolute inset-0 hidden xl:block pointer-events-none">
           <div className="relative mx-auto max-w-7xl h-full overflow-hidden">
-            <div className="absolute inset-y-[12%] right-3 w-[44%] min-w-[460px] max-w-[610px]">
+            <div className="absolute inset-y-[10%] right-4 w-[48%] min-w-[520px] max-w-[720px]">
               {HERO_SLIDES[heroAtivo].cards.map((card, idx) => {
-                const tx = Math.round(parallax.x * 18 * card.depth)
-                const ty = Math.round(parallax.y * 14 * card.depth)
+                const tx = Math.round(parallax.x * 10 * card.depth)
+                const ty = Math.round(parallax.y * 8 * card.depth)
                 return (
                   <article
                     key={`${HERO_SLIDES[heroAtivo].id}-${card.titulo}`}
