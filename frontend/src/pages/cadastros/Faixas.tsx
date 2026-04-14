@@ -33,6 +33,7 @@ export default function FaixasPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<FaixaComissao | null>(null)
   const [saving, setSaving] = useState(false)
+  const [perfilSelecionado, setPerfilSelecionado] = useState<'vendedor' | 'coordenador' | 'supervisor'>('vendedor')
   const {
     register,
     handleSubmit,
@@ -59,12 +60,14 @@ export default function FaixasPage() {
 
   const openCreate = () => {
     setEditing(null)
+    setPerfilSelecionado('vendedor')
     reset({ ativo: true })
     setModalOpen(true)
   }
 
   const openEdit = (item: FaixaComissao) => {
     setEditing(item)
+    setPerfilSelecionado('vendedor')
     reset({
       ...item,
       percentuais_str: item.percentuais.join(', '),
@@ -79,9 +82,9 @@ export default function FaixasPage() {
     setSaving(true)
     try {
       const percentuais = parsePercentuais(data.percentuais_str)
-      const percentuais_vendedor = parsePercentuais(data.percentuais_vendedor_str)
-      const percentuais_coordenador = parsePercentuais(data.percentuais_coordenador_str)
-      const percentuais_supervisor = parsePercentuais(data.percentuais_supervisor_str)
+      const percentuais_vendedor = parsePercentuais(data.percentuais_vendedor_str || data.percentuais_str)
+      const percentuais_coordenador = parsePercentuais(data.percentuais_coordenador_str || data.percentuais_str)
+      const percentuais_supervisor = parsePercentuais(data.percentuais_supervisor_str || data.percentuais_str)
 
       const payload = {
         consorcio: data.consorcio,
@@ -203,16 +206,37 @@ export default function FaixasPage() {
           </div>
 
           <div>
-            <label className="label">Percentuais do Vendedor (%) *</label>
-            <input {...register('percentuais_vendedor_str', { required: true })} className="input" placeholder="Ex: 0.3, 0.3, 0.3" />
+            <label className="label">Perfil *</label>
+            <select
+              value={perfilSelecionado}
+              onChange={(e) => setPerfilSelecionado(e.target.value as 'vendedor' | 'coordenador' | 'supervisor')}
+              className="input"
+            >
+              <option value="vendedor">Vendedor</option>
+              <option value="coordenador">Coordenador</option>
+              <option value="supervisor">Supervisor</option>
+            </select>
+            <p className="text-xs text-gray-400 mt-1">Escolha o perfil para configurar o percentual específico.</p>
           </div>
+
           <div>
-            <label className="label">Percentuais do Coordenador (%) *</label>
-            <input {...register('percentuais_coordenador_str', { required: true })} className="input" placeholder="Ex: 0.1, 0.1, 0.1" />
-          </div>
-          <div>
-            <label className="label">Percentuais do Supervisor (%) *</label>
-            <input {...register('percentuais_supervisor_str', { required: true })} className="input" placeholder="Ex: 0.05, 0.05, 0.05" />
+            <label className="label">
+              {perfilSelecionado === 'vendedor'
+                ? 'Percentuais do Vendedor (%)'
+                : perfilSelecionado === 'coordenador'
+                  ? 'Percentuais do Coordenador (%)'
+                  : 'Percentuais do Supervisor (%)'}
+            </label>
+            {perfilSelecionado === 'vendedor' && (
+              <input {...register('percentuais_vendedor_str')} className="input" placeholder="Ex: 0.3, 0.3, 0.3" />
+            )}
+            {perfilSelecionado === 'coordenador' && (
+              <input {...register('percentuais_coordenador_str')} className="input" placeholder="Ex: 0.1, 0.1, 0.1" />
+            )}
+            {perfilSelecionado === 'supervisor' && (
+              <input {...register('percentuais_supervisor_str')} className="input" placeholder="Ex: 0.05, 0.05, 0.05" />
+            )}
+            <p className="text-xs text-gray-400 mt-1">Se deixar em branco, o sistema usará a base de parcelas.</p>
           </div>
 
           <div className="flex items-center gap-2">
