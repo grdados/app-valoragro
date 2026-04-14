@@ -70,24 +70,8 @@ class Command(BaseCommand):
             vigencia_inicio=date(2024, 1, 1), vigencia_fim=date(2026, 12, 31),
             qtd_parcelas=3,
         )
-        FaixaComissao.objects.create(
-            consorcio=cons1,
-            valor_min=100000,
-            valor_max=300000,
-            percentuais=[0.5, 0.5, 0.5],
-            percentuais_vendedor=[0.5, 0.5, 0.5],
-            percentuais_coordenador=[0.1, 0.1, 0.1],
-            percentuais_supervisor=[0.05, 0.05, 0.05],
-        )
-        FaixaComissao.objects.create(
-            consorcio=cons1,
-            valor_min=300001,
-            valor_max=800000,
-            percentuais=[0.6, 0.6, 0.6],
-            percentuais_vendedor=[0.6, 0.6, 0.6],
-            percentuais_coordenador=[0.12, 0.12, 0.12],
-            percentuais_supervisor=[0.06, 0.06, 0.06],
-        )
+        self._criar_faixa(cons1, 100000, 300000, 1.50, 3, 0.30, 3, 0.15, 3)
+        self._criar_faixa(cons1, 300001, 800000, 1.80, 3, 0.36, 3, 0.18, 3)
 
         cons2 = Consorcio.objects.create(
             nome="Consórcio Veículos ISF",
@@ -95,15 +79,7 @@ class Command(BaseCommand):
             vigencia_inicio=date(2024, 1, 1), vigencia_fim=date(2026, 12, 31),
             qtd_parcelas=2,
         )
-        FaixaComissao.objects.create(
-            consorcio=cons2,
-            valor_min=30000,
-            valor_max=150000,
-            percentuais=[0.4, 0.4],
-            percentuais_vendedor=[0.4, 0.4],
-            percentuais_coordenador=[0.08, 0.08],
-            percentuais_supervisor=[0.04, 0.04],
-        )
+        self._criar_faixa(cons2, 30000, 150000, 0.80, 2, 0.16, 2, 0.08, 2)
 
         cons3 = Consorcio.objects.create(
             nome="Consórcio Outros Bens BBTS",
@@ -111,15 +87,7 @@ class Command(BaseCommand):
             vigencia_inicio=date(2024, 1, 1), vigencia_fim=date(2026, 12, 31),
             qtd_parcelas=2,
         )
-        FaixaComissao.objects.create(
-            consorcio=cons3,
-            valor_min=5000,
-            valor_max=100000,
-            percentuais=[0.35, 0.35],
-            percentuais_vendedor=[0.35, 0.35],
-            percentuais_coordenador=[0.07, 0.07],
-            percentuais_supervisor=[0.03, 0.03],
-        )
+        self._criar_faixa(cons3, 5000, 100000, 0.70, 2, 0.14, 2, 0.06, 2)
 
         User.objects.create_user(
             username="carlos", email="carlos.user@valoragro.com.br", password="coord123",
@@ -150,3 +118,40 @@ class Command(BaseCommand):
         self.stdout.write("  joao / vend123 (Vendedor)")
         self.stdout.write("  maria / vend123 (Vendedor)")
         self.stdout.write("  pedro / vend123 (Vendedor)")
+
+    def _criar_faixa(
+        self,
+        consorcio: Consorcio,
+        valor_min: float,
+        valor_max: float,
+        perc_vendedor: float,
+        parcelas_vendedor: int,
+        perc_coordenador: float,
+        parcelas_coordenador: int,
+        perc_supervisor: float,
+        parcelas_supervisor: int,
+    ):
+        FaixaComissao.objects.create(
+            consorcio=consorcio,
+            perfil="vendedor",
+            valor_min=valor_min,
+            valor_max=valor_max,
+            percentual_total=perc_vendedor,
+            qtd_parcelas=parcelas_vendedor,
+        )
+        FaixaComissao.objects.create(
+            consorcio=consorcio,
+            perfil="coordenador",
+            valor_min=valor_min,
+            valor_max=valor_max,
+            percentual_total=perc_coordenador,
+            qtd_parcelas=parcelas_coordenador,
+        )
+        FaixaComissao.objects.create(
+            consorcio=consorcio,
+            perfil="supervisor",
+            valor_min=valor_min,
+            valor_max=valor_max,
+            percentual_total=perc_supervisor,
+            qtd_parcelas=parcelas_supervisor,
+        )

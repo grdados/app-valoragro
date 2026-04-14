@@ -172,34 +172,32 @@ class Consorcio(models.Model):
 
 
 class FaixaComissao(models.Model):
+    PERFIL_CHOICES = [
+        ("vendedor", "Vendedor"),
+        ("coordenador", "Coordenador"),
+        ("supervisor", "Supervisor"),
+    ]
+
     consorcio = models.ForeignKey(
         Consorcio, on_delete=models.CASCADE, related_name="faixas"
     )
+    perfil = models.CharField(max_length=20, choices=PERFIL_CHOICES, default="vendedor")
     valor_min = models.DecimalField(max_digits=15, decimal_places=2)
     valor_max = models.DecimalField(max_digits=15, decimal_places=2)
-    percentuais = models.JSONField(
-        help_text="Lista de percentuais por parcela. Ex: [0.5, 0.5, 0.5] para 3 parcelas"
-    )
-    percentuais_vendedor = models.JSONField(
-        default=list,
-        help_text="Percentuais por parcela para o perfil vendedor.",
-    )
-    percentuais_coordenador = models.JSONField(
-        default=list,
-        help_text="Percentuais por parcela para o perfil coordenador.",
-    )
-    percentuais_supervisor = models.JSONField(
-        default=list,
-        help_text="Percentuais por parcela para o perfil supervisor.",
-    )
+    percentual_total = models.DecimalField(max_digits=7, decimal_places=4)
+    qtd_parcelas = models.PositiveIntegerField(default=1)
+    # Campo legado mantido apenas para compatibilidade histórica.
+    percentuais = models.JSONField(default=list, blank=True)
     ativo = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = "Faixa de Comissão"
         verbose_name_plural = "Faixas de Comissão"
+        ordering = ["consorcio_id", "perfil", "valor_min"]
+        unique_together = [["consorcio", "perfil", "valor_min", "valor_max"]]
 
     def __str__(self):
-        return f"{self.consorcio} | R$ {self.valor_min} - R$ {self.valor_max}"
+        return f"{self.consorcio} | {self.get_perfil_display()} | R$ {self.valor_min} - R$ {self.valor_max}"
 
 
 class Assembleia(models.Model):
@@ -216,3 +214,4 @@ class Assembleia(models.Model):
 
     def __str__(self):
         return f"{self.consorcio} - {self.data_assembleia}"
+

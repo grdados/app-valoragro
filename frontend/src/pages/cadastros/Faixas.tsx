@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { faixasApi, consorciosApi } from '../../services/api'
 import PageHeader from '../../components/PageHeader'
@@ -11,20 +11,19 @@ import type { FaixaComissao, Consorcio } from '../../types'
 
 interface FormData {
   consorcio: number
+  perfil: 'vendedor' | 'coordenador' | 'supervisor'
   valor_min: number
   valor_max: number
-  percentuais_str: string
-  percentuais_vendedor_str: string
-  percentuais_coordenador_str: string
-  percentuais_supervisor_str: string
+  percentual_total: number
+  qtd_parcelas: number
   ativo: boolean
 }
 
-const parsePercentuais = (value: string) =>
-  value
-    .split(',')
-    .map((p) => parseFloat(p.trim()))
-    .filter((p) => !Number.isNaN(p))
+const PERFIS: Array<{ value: FormData['perfil']; label: string }> = [
+  { value: 'vendedor', label: 'Vendedor' },
+  { value: 'coordenador', label: 'Coordenador' },
+  { value: 'supervisor', label: 'Supervisor' },
+]
 
 export default function FaixasPage() {
   const [items, setItems] = useState<FaixaComissao[]>([])
@@ -33,7 +32,6 @@ export default function FaixasPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<FaixaComissao | null>(null)
   const [saving, setSaving] = useState(false)
-  const [perfilSelecionado, setPerfilSelecionado] = useState<'vendedor' | 'coordenador' | 'supervisor'>('vendedor')
   const {
     register,
     handleSubmit,
@@ -60,20 +58,24 @@ export default function FaixasPage() {
 
   const openCreate = () => {
     setEditing(null)
-    setPerfilSelecionado('vendedor')
-    reset({ ativo: true })
+    reset({
+      ativo: true,
+      perfil: 'vendedor',
+      qtd_parcelas: 1,
+    })
     setModalOpen(true)
   }
 
   const openEdit = (item: FaixaComissao) => {
     setEditing(item)
-    setPerfilSelecionado('vendedor')
     reset({
-      ...item,
-      percentuais_str: item.percentuais.join(', '),
-      percentuais_vendedor_str: (item.percentuais_vendedor || []).join(', '),
-      percentuais_coordenador_str: (item.percentuais_coordenador || []).join(', '),
-      percentuais_supervisor_str: (item.percentuais_supervisor || []).join(', '),
+      consorcio: item.consorcio,
+      perfil: item.perfil,
+      valor_min: item.valor_min,
+      valor_max: item.valor_max,
+      percentual_total: item.percentual_total,
+      qtd_parcelas: item.qtd_parcelas,
+      ativo: item.ativo,
     })
     setModalOpen(true)
   }
@@ -81,19 +83,13 @@ export default function FaixasPage() {
   const onSubmit = async (data: FormData) => {
     setSaving(true)
     try {
-      const percentuais = parsePercentuais(data.percentuais_str)
-      const percentuais_vendedor = parsePercentuais(data.percentuais_vendedor_str || data.percentuais_str)
-      const percentuais_coordenador = parsePercentuais(data.percentuais_coordenador_str || data.percentuais_str)
-      const percentuais_supervisor = parsePercentuais(data.percentuais_supervisor_str || data.percentuais_str)
-
       const payload = {
         consorcio: data.consorcio,
+        perfil: data.perfil,
         valor_min: data.valor_min,
         valor_max: data.valor_max,
-        percentuais,
-        percentuais_vendedor,
-        percentuais_coordenador,
-        percentuais_supervisor,
+        percentual_total: data.percentual_total,
+        qtd_parcelas: data.qtd_parcelas,
         ativo: data.ativo,
       }
 
@@ -131,11 +127,11 @@ export default function FaixasPage() {
 
   const columns = [
     { key: 'consorcio', header: 'Consórcio', render: (row: FaixaComissao) => getConsorcioNome(row.consorcio) },
+    { key: 'perfil_display', header: 'Perfil', render: (row: FaixaComissao) => row.perfil_display },
     { key: 'valor_min', header: 'Valor Mínimo', render: (row: FaixaComissao) => formatCurrency(row.valor_min) },
     { key: 'valor_max', header: 'Valor Máximo', render: (row: FaixaComissao) => formatCurrency(row.valor_max) },
-    { key: 'percentuais_vendedor', header: 'Vendedor (%)', render: (row: FaixaComissao) => (row.percentuais_vendedor || []).join(', ') },
-    { key: 'percentuais_coordenador', header: 'Coordenador (%)', render: (row: FaixaComissao) => (row.percentuais_coordenador || []).join(', ') },
-    { key: 'percentuais_supervisor', header: 'Supervisor (%)', render: (row: FaixaComissao) => (row.percentuais_supervisor || []).join(', ') },
+    { key: 'percentual_total', header: 'Percentual (%)', render: (row: FaixaComissao) => `${Number(row.percentual_total).toFixed(4)}%` },
+    { key: 'qtd_parcelas', header: 'Parcelas', render: (row: FaixaComissao) => row.qtd_parcelas },
     {
       key: 'ativo',
       header: 'Status',
@@ -188,6 +184,19 @@ export default function FaixasPage() {
             </select>
             {errors.consorcio && <p className="text-red-500 text-xs mt-1">Obrigatório</p>}
           </div>
+
+          <div>
+            <label className="label">Perfil *</label>
+            <select {...register('perfil', { required: true })} className="input">
+              {PERFIS.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+            {errors.perfil && <p className="text-red-500 text-xs mt-1">Obrigatório</p>}
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="label">Valor Mínimo (R$) *</label>
@@ -199,44 +208,22 @@ export default function FaixasPage() {
             </div>
           </div>
 
-          <div>
-            <label className="label">Base de Parcelas (referência) *</label>
-            <input {...register('percentuais_str', { required: true })} className="input" placeholder="Ex: 0.5, 0.5, 0.5" />
-            <p className="text-xs text-gray-400 mt-1">Quantidade dessa lista define o total de parcelas.</p>
-          </div>
-
-          <div>
-            <label className="label">Perfil *</label>
-            <select
-              value={perfilSelecionado}
-              onChange={(e) => setPerfilSelecionado(e.target.value as 'vendedor' | 'coordenador' | 'supervisor')}
-              className="input"
-            >
-              <option value="vendedor">Vendedor</option>
-              <option value="coordenador">Coordenador</option>
-              <option value="supervisor">Supervisor</option>
-            </select>
-            <p className="text-xs text-gray-400 mt-1">Escolha o perfil para configurar o percentual específico.</p>
-          </div>
-
-          <div>
-            <label className="label">
-              {perfilSelecionado === 'vendedor'
-                ? 'Percentuais do Vendedor (%)'
-                : perfilSelecionado === 'coordenador'
-                  ? 'Percentuais do Coordenador (%)'
-                  : 'Percentuais do Supervisor (%)'}
-            </label>
-            {perfilSelecionado === 'vendedor' && (
-              <input {...register('percentuais_vendedor_str')} className="input" placeholder="Ex: 0.3, 0.3, 0.3" />
-            )}
-            {perfilSelecionado === 'coordenador' && (
-              <input {...register('percentuais_coordenador_str')} className="input" placeholder="Ex: 0.1, 0.1, 0.1" />
-            )}
-            {perfilSelecionado === 'supervisor' && (
-              <input {...register('percentuais_supervisor_str')} className="input" placeholder="Ex: 0.05, 0.05, 0.05" />
-            )}
-            <p className="text-xs text-gray-400 mt-1">Se deixar em branco, o sistema usará a base de parcelas.</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Percentual Total (%) *</label>
+              <input
+                type="number"
+                step="0.0001"
+                min="0.0001"
+                {...register('percentual_total', { required: true, valueAsNumber: true })}
+                className="input"
+                placeholder="Ex.: 0.8000"
+              />
+            </div>
+            <div>
+              <label className="label">Quantidade de Parcelas *</label>
+              <input type="number" min="1" {...register('qtd_parcelas', { required: true, min: 1, valueAsNumber: true })} className="input" />
+            </div>
           </div>
 
           <div className="flex items-center gap-2">

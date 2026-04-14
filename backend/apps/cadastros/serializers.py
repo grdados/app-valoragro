@@ -126,48 +126,38 @@ class COBANSerializer(serializers.ModelSerializer):
 
 
 class FaixaComissaoSerializer(serializers.ModelSerializer):
+    perfil_display = serializers.CharField(source="get_perfil_display", read_only=True)
+
     class Meta:
         model = FaixaComissao
         fields = [
             "id",
             "consorcio",
+            "perfil",
+            "perfil_display",
             "valor_min",
             "valor_max",
+            "percentual_total",
+            "qtd_parcelas",
             "percentuais",
-            "percentuais_vendedor",
-            "percentuais_coordenador",
-            "percentuais_supervisor",
             "ativo",
         ]
 
-    def _validate_percentuais_list(self, value, field_name):
-        if not isinstance(value, list):
-            raise serializers.ValidationError({field_name: "Percentuais deve ser uma lista."})
-        if not all(isinstance(p, (int, float)) for p in value):
-            raise serializers.ValidationError({field_name: "Todos os percentuais devem ser números."})
-        return value
-
     def validate(self, attrs):
-        base = attrs.get("percentuais", getattr(self.instance, "percentuais", []))
-        vendedor = attrs.get("percentuais_vendedor", getattr(self.instance, "percentuais_vendedor", []))
-        coordenador = attrs.get("percentuais_coordenador", getattr(self.instance, "percentuais_coordenador", []))
-        supervisor = attrs.get("percentuais_supervisor", getattr(self.instance, "percentuais_supervisor", []))
+        valor_min = attrs.get("valor_min", getattr(self.instance, "valor_min", None))
+        valor_max = attrs.get("valor_max", getattr(self.instance, "valor_max", None))
+        qtd_parcelas = attrs.get("qtd_parcelas", getattr(self.instance, "qtd_parcelas", 1))
+        percentual_total = attrs.get("percentual_total", getattr(self.instance, "percentual_total", None))
 
-        self._validate_percentuais_list(base, "percentuais")
-        self._validate_percentuais_list(vendedor, "percentuais_vendedor")
-        self._validate_percentuais_list(coordenador, "percentuais_coordenador")
-        self._validate_percentuais_list(supervisor, "percentuais_supervisor")
+        if valor_min is not None and valor_max is not None and valor_min > valor_max:
+            raise serializers.ValidationError({"valor_max": "Valor máximo deve ser maior ou igual ao valor mínimo."})
 
-        expected = len(base)
-        for field_name, value in (
-            ("percentuais_vendedor", vendedor),
-            ("percentuais_coordenador", coordenador),
-            ("percentuais_supervisor", supervisor),
-        ):
-            if len(value) != expected:
-                raise serializers.ValidationError(
-                    {field_name: f"Deve ter {expected} percentual(is), igual ao número de parcelas da faixa base."}
-                )
+        if qtd_parcelas is not None and int(qtd_parcelas) < 1:
+            raise serializers.ValidationError({"qtd_parcelas": "Quantidade de parcelas deve ser no mínimo 1."})
+
+        if percentual_total is not None and float(percentual_total) <= 0:
+            raise serializers.ValidationError({"percentual_total": "Percentual total deve ser maior que zero."})
+
         return attrs
 
 
@@ -193,3 +183,4 @@ class ConsorcioSerializer(serializers.ModelSerializer):
             "faixas", "assembleias",
         ]
         read_only_fields = ["id", "criado_em"]
+
