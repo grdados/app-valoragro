@@ -1,4 +1,4 @@
-from django.db import models
+﻿from django.db import models
 from apps.vendas.models import Venda
 
 
@@ -12,7 +12,14 @@ class ParcelaComissao(models.Model):
         ("ok", "OK"),
         ("inadimplente", "Inadimplente"),
     ]
+    PERFIL_CHOICES = [
+        ("vendedor", "Vendedor"),
+        ("coordenador", "Coordenador"),
+        ("supervisor", "Supervisor"),
+    ]
+
     venda = models.ForeignKey(Venda, on_delete=models.CASCADE, related_name="parcelas")
+    perfil_comissao = models.CharField(max_length=20, choices=PERFIL_CHOICES, default="vendedor")
     numero_parcela = models.PositiveIntegerField()
     data_vencimento = models.DateField()
     valor = models.DecimalField(max_digits=15, decimal_places=2)
@@ -26,11 +33,11 @@ class ParcelaComissao(models.Model):
     class Meta:
         verbose_name = "Parcela de Comissão"
         verbose_name_plural = "Parcelas de Comissão"
-        ordering = ["venda", "numero_parcela"]
-        unique_together = [["venda", "numero_parcela"]]
+        ordering = ["venda", "perfil_comissao", "numero_parcela"]
+        unique_together = [["venda", "perfil_comissao", "numero_parcela"]]
 
     def __str__(self):
-        return f"{self.venda.numero_contrato} - Parcela {self.numero_parcela}"
+        return f"{self.venda.numero_contrato} - {self.perfil_comissao} - Parcela {self.numero_parcela}"
 
 
 class LogAlteracao(models.Model):
@@ -47,4 +54,4 @@ class LogAlteracao(models.Model):
         ordering = ["-data_hora"]
 
     def __str__(self):
-        return f"{self.parcela} | {self.status_anterior} → {self.status_novo}"
+        return f"{self.parcela} | {self.status_anterior} -> {self.status_novo}"

@@ -1,4 +1,4 @@
-from datetime import date
+﻿from datetime import date
 from decimal import Decimal
 from .models import ParcelaComissao, LogAlteracao
 from apps.vendas.models import Venda
@@ -10,21 +10,35 @@ def gerar_parcelas(venda: Venda, usuario=None) -> list:
         venda.parcelas.all().delete()
 
     primeiro_vencimento = calcular_primeiro_vencimento(venda.data_venda, venda.consorcio)
-    parcelas_data, total = calcular_plano_parcelas(venda.valor_bem, venda.consorcio, primeiro_vencimento)
 
     parcelas = []
-    for p in parcelas_data:
-        parcela = ParcelaComissao.objects.create(
-            venda=venda,
-            numero_parcela=p["numero_parcela"],
-            data_vencimento=p["data_vencimento"],
-            valor=Decimal(str(p["valor"])),
-            percentual=Decimal(str(p["percentual"])),
-            status="pendente",
-        )
-        parcelas.append(parcela)
+    total_vendedor = Decimal("0")
 
-    venda.valor_total_comissao = total
+    for perfil in ("vendedor", "coordenador", "supervisor"):
+        parcelas_data, total = calcular_plano_parcelas(
+            venda.valor_bem,
+            venda.consorcio,
+            primeiro_vencimento,
+            perfil=perfil,
+        )
+
+        if perfil == "vendedor":
+            total_vendedor = total
+
+        for p in parcelas_data:
+            parcela = ParcelaComissao.objects.create(
+                venda=venda,
+                perfil_comissao=perfil,
+                numero_parcela=p["numero_parcela"],
+                data_vencimento=p["data_vencimento"],
+                valor=Decimal(str(p["valor"])),
+                percentual=Decimal(str(p["percentual"])),
+                status="pendente",
+            )
+            parcelas.append(parcela)
+
+    # Mantém compatibilidade com o campo existente da venda, refletindo comissão do vendedor.
+    venda.valor_total_comissao = total_vendedor
     venda.save(update_fields=["valor_total_comissao"])
 
     return parcelas

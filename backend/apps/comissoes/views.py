@@ -18,11 +18,14 @@ def scope_parcelas(qs, user):
         return qs
     if user.is_coordenador():
         if user.coordenador_ref:
-            return qs.filter(venda__vendedor__coordenador=user.coordenador_ref)
+            return qs.filter(
+                venda__vendedor__coordenador=user.coordenador_ref,
+                perfil_comissao__in=["coordenador", "vendedor"],
+            )
         return qs
     if user.is_vendedor():
         if user.vendedor_ref:
-            return qs.filter(venda__vendedor=user.vendedor_ref)
+            return qs.filter(venda__vendedor=user.vendedor_ref, perfil_comissao="vendedor")
         return qs.none()
     return qs.none()
 
@@ -46,6 +49,7 @@ class ParcelaComissaoViewSet(viewsets.ReadOnlyModelViewSet):
         data_fim = self.request.query_params.get("data_fim")
         venda = self.request.query_params.get("venda")
         cliente = self.request.query_params.get("cliente")
+        perfil_comissao = self.request.query_params.get("perfil_comissao")
 
         if vendedor:
             qs = qs.filter(venda__vendedor_id=vendedor)
@@ -61,6 +65,8 @@ class ParcelaComissaoViewSet(viewsets.ReadOnlyModelViewSet):
             qs = qs.filter(venda_id=venda)
         if cliente:
             qs = qs.filter(venda__cliente_id=cliente)
+        if perfil_comissao:
+            qs = qs.filter(perfil_comissao=perfil_comissao)
 
         return qs
 

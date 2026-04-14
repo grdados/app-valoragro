@@ -95,6 +95,9 @@ export interface FaixaComissao {
   valor_min: number
   valor_max: number
   percentuais: number[]
+  percentuais_vendedor: number[]
+  percentuais_coordenador: number[]
+  percentuais_supervisor: number[]
   ativo: boolean
 }
 
@@ -161,6 +164,8 @@ export interface ParcelaComissao {
   vendedor_nome: string
   coordenador_nome: string
   cliente_nome: string
+  perfil_comissao: 'vendedor' | 'coordenador' | 'supervisor'
+  perfil_comissao_display: string
   numero_parcela: number
   data_vencimento: string
   valor: number

@@ -180,6 +180,18 @@ class FaixaComissao(models.Model):
     percentuais = models.JSONField(
         help_text="Lista de percentuais por parcela. Ex: [0.5, 0.5, 0.5] para 3 parcelas"
     )
+    percentuais_vendedor = models.JSONField(
+        default=list,
+        help_text="Percentuais por parcela para o perfil vendedor.",
+    )
+    percentuais_coordenador = models.JSONField(
+        default=list,
+        help_text="Percentuais por parcela para o perfil coordenador.",
+    )
+    percentuais_supervisor = models.JSONField(
+        default=list,
+        help_text="Percentuais por parcela para o perfil supervisor.",
+    )
     ativo = models.BooleanField(default=True)
 
     class Meta:

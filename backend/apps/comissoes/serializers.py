@@ -15,6 +15,7 @@ class ParcelaComissaoSerializer(serializers.ModelSerializer):
     vendedor_nome = serializers.CharField(source="venda.vendedor.nome", read_only=True)
     coordenador_nome = serializers.CharField(source="venda.vendedor.coordenador.nome", read_only=True)
     cliente_nome = serializers.SerializerMethodField()
+    perfil_comissao_display = serializers.CharField(source="get_perfil_comissao_display", read_only=True)
     logs = LogAlteracaoSerializer(many=True, read_only=True)
 
     def get_cliente_nome(self, obj):
@@ -24,6 +25,7 @@ class ParcelaComissaoSerializer(serializers.ModelSerializer):
         model = ParcelaComissao
         fields = [
             "id", "venda", "venda_contrato", "vendedor_nome", "coordenador_nome", "cliente_nome",
+            "perfil_comissao", "perfil_comissao_display",
             "numero_parcela", "data_vencimento", "valor", "percentual",
             "status", "status_contrato_banco", "data_pagamento", "criado_em", "atualizado_em", "logs",
         ]

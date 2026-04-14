@@ -106,6 +106,7 @@ export default function ComissoesPage() {
   const columns = [
     { key: 'venda_contrato', header: 'Contrato' },
     { key: 'cliente_nome', header: 'Cliente' },
+    { key: 'perfil_comissao_display', header: 'Perfil Comissão' },
     { key: 'vendedor_nome', header: 'Vendedor' },
     ...(user?.perfil !== 'vendedor' ? [{ key: 'coordenador_nome', header: 'Coordenador' }] : []),
     { key: 'numero_parcela', header: 'Parcela' },

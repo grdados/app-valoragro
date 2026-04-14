@@ -1,4 +1,4 @@
-from rest_framework import serializers
+﻿from rest_framework import serializers
 from django.conf import settings
 from .models import Supervisor, Cliente, Coordenador, Vendedor, TipoBem, COBAN, Consorcio, FaixaComissao, Assembleia
 
@@ -128,14 +128,47 @@ class COBANSerializer(serializers.ModelSerializer):
 class FaixaComissaoSerializer(serializers.ModelSerializer):
     class Meta:
         model = FaixaComissao
-        fields = ["id", "consorcio", "valor_min", "valor_max", "percentuais", "ativo"]
+        fields = [
+            "id",
+            "consorcio",
+            "valor_min",
+            "valor_max",
+            "percentuais",
+            "percentuais_vendedor",
+            "percentuais_coordenador",
+            "percentuais_supervisor",
+            "ativo",
+        ]
 
-    def validate_percentuais(self, value):
+    def _validate_percentuais_list(self, value, field_name):
         if not isinstance(value, list):
-            raise serializers.ValidationError("Percentuais deve ser uma lista.")
+            raise serializers.ValidationError({field_name: "Percentuais deve ser uma lista."})
         if not all(isinstance(p, (int, float)) for p in value):
-            raise serializers.ValidationError("Todos os percentuais devem ser números.")
+            raise serializers.ValidationError({field_name: "Todos os percentuais devem ser números."})
         return value
+
+    def validate(self, attrs):
+        base = attrs.get("percentuais", getattr(self.instance, "percentuais", []))
+        vendedor = attrs.get("percentuais_vendedor", getattr(self.instance, "percentuais_vendedor", []))
+        coordenador = attrs.get("percentuais_coordenador", getattr(self.instance, "percentuais_coordenador", []))
+        supervisor = attrs.get("percentuais_supervisor", getattr(self.instance, "percentuais_supervisor", []))
+
+        self._validate_percentuais_list(base, "percentuais")
+        self._validate_percentuais_list(vendedor, "percentuais_vendedor")
+        self._validate_percentuais_list(coordenador, "percentuais_coordenador")
+        self._validate_percentuais_list(supervisor, "percentuais_supervisor")
+
+        expected = len(base)
+        for field_name, value in (
+            ("percentuais_vendedor", vendedor),
+            ("percentuais_coordenador", coordenador),
+            ("percentuais_supervisor", supervisor),
+        ):
+            if len(value) != expected:
+                raise serializers.ValidationError(
+                    {field_name: f"Deve ter {expected} percentual(is), igual ao número de parcelas da faixa base."}
+                )
+        return attrs
 
 
 class AssembleiaSerializer(serializers.ModelSerializer):

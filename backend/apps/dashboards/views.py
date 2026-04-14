@@ -41,11 +41,14 @@ def apply_scope(vendas_qs, parcelas_qs, user):
     if user.is_coordenador():
         if user.coordenador_ref:
             vendas_qs = vendas_qs.filter(vendedor__coordenador=user.coordenador_ref)
-            parcelas_qs = parcelas_qs.filter(venda__vendedor__coordenador=user.coordenador_ref)
+            parcelas_qs = parcelas_qs.filter(
+                venda__vendedor__coordenador=user.coordenador_ref,
+                perfil_comissao__in=["coordenador", "vendedor"],
+            )
         return vendas_qs, parcelas_qs
     if user.is_vendedor() and user.vendedor_ref:
         vendas_qs = vendas_qs.filter(vendedor=user.vendedor_ref)
-        parcelas_qs = parcelas_qs.filter(venda__vendedor=user.vendedor_ref)
+        parcelas_qs = parcelas_qs.filter(venda__vendedor=user.vendedor_ref, perfil_comissao="vendedor")
         return vendas_qs, parcelas_qs
     return vendas_qs.none(), parcelas_qs.none()
 
