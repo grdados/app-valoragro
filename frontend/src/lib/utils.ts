@@ -11,6 +11,25 @@ export function formatCurrency(value: number): string {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 }
 
+export function formatCurrencyInput(value: string | number): string {
+  const digits = String(value ?? '').replace(/\D/g, '')
+  if (!digits) return ''
+  const numeric = Number(digits) / 100
+  return numeric.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+}
+
+export function parseCurrencyInput(value: string): number {
+  const normalized = String(value || '')
+    .replace(/\./g, '')
+    .replace(',', '.')
+    .trim()
+  const parsed = Number(normalized)
+  return Number.isFinite(parsed) ? parsed : NaN
+}
+
 export function formatDate(dateStr: string): string {
   if (!dateStr) return '-'
   try {

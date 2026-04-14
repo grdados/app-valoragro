@@ -1,12 +1,12 @@
 ﻿import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { ArrowLeft, Search, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { vendasApi, vendedoresApi, cobansApi, tiposBemApi, comissoesApi, clientesApi } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
 import PageHeader from '../components/PageHeader'
-import { formatCurrency, formatDate } from '../lib/utils'
+import { formatCurrency, formatCurrencyInput, formatDate, parseCurrencyInput } from '../lib/utils'
 import type { Vendedor, COBAN, TipoBem, ConsorcioDisponivel, PlanoParcelaPreview, Cliente } from '../types'
 
 interface FormData {
@@ -16,13 +16,13 @@ interface FormData {
   vendedor: number
   coban: number
   tipo_bem: number
-  valor_bem: number
+  valor_bem: string
 }
 
 export default function NovaVendaPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { register, handleSubmit, watch, getValues, formState: { errors } } = useForm<FormData>()
+  const { register, control, handleSubmit, watch, getValues, formState: { errors } } = useForm<FormData>()
 
   const [vendedores, setVendedores] = useState<Vendedor[]>([])
   const [cobans, setCobans] = useState<COBAN[]>([])
@@ -64,8 +64,9 @@ export default function NovaVendaPage() {
   }, [])
 
   const handlePreview = async () => {
-    const [data_venda, coban_id, tipo_bem_id, valor_bem] = getValues(['data_venda', 'coban', 'tipo_bem', 'valor_bem'])
-    if (!data_venda || !coban_id || !tipo_bem_id || !valor_bem) {
+    const [data_venda, coban_id, tipo_bem_id, valor_bem_raw] = getValues(['data_venda', 'coban', 'tipo_bem', 'valor_bem'])
+    const valor_bem = parseCurrencyInput(valor_bem_raw)
+    if (!data_venda || !coban_id || !tipo_bem_id || !Number.isFinite(valor_bem) || valor_bem <= 0) {
       toast.error('Preencha todos os campos para buscar consórcios')
       return
     }
@@ -77,7 +78,7 @@ export default function NovaVendaPage() {
     }
     setPreviewing(true)
     try {
-      const res = await vendasApi.preview({ data_venda, coban: cobanObj.sigla, tipo_bem: tipoBemObj.nome, valor_bem: Number(valor_bem) })
+      const res = await vendasApi.preview({ data_venda, coban: cobanObj.sigla, tipo_bem: tipoBemObj.nome, valor_bem })
       setConsorcios(res.data.consorcios_disponiveis)
       setSelectedConsorcio(null)
       setPlano([])
@@ -101,12 +102,13 @@ export default function NovaVendaPage() {
 
   const handleSelectConsorcio = async (consorcioId: number) => {
     setSelectedConsorcio(consorcioId)
-    const [data_venda, coban_id, tipo_bem_id, valor_bem] = getValues(['data_venda', 'coban', 'tipo_bem', 'valor_bem'])
+    const [data_venda, coban_id, tipo_bem_id, valor_bem_raw] = getValues(['data_venda', 'coban', 'tipo_bem', 'valor_bem'])
+    const valor_bem = parseCurrencyInput(valor_bem_raw)
     const cobanObj = cobans.find(c => c.id === Number(coban_id))
     const tipoBemObj = tiposBem.find(t => t.id === Number(tipo_bem_id))
     if (!cobanObj || !tipoBemObj) return
     try {
-      const res = await vendasApi.preview({ data_venda, coban: cobanObj.sigla, tipo_bem: tipoBemObj.nome, valor_bem: Number(valor_bem), consorcio_id: consorcioId })
+      const res = await vendasApi.preview({ data_venda, coban: cobanObj.sigla, tipo_bem: tipoBemObj.nome, valor_bem, consorcio_id: consorcioId })
       if (res.data.parcelas) {
         setPlano(res.data.parcelas)
         setTotalComissao(res.data.valor_total_comissao || 0)
@@ -124,9 +126,15 @@ export default function NovaVendaPage() {
     }
     setSaving(true)
     try {
+      const valorBem = parseCurrencyInput(data.valor_bem)
+      if (!Number.isFinite(valorBem) || valorBem <= 0) {
+        toast.error('Informe um valor do bem válido.')
+        setSaving(false)
+        return
+      }
       const vendaRes = await vendasApi.create({
         ...data,
-        valor_bem: Number(data.valor_bem),
+        valor_bem: valorBem,
         consorcio: selectedConsorcio,
       })
       await comissoesApi.gerar(vendaRes.data.id)
@@ -223,7 +231,21 @@ export default function NovaVendaPage() {
             </div>
             <div>
               <label className="label">Valor do Bem (R$) *</label>
-              <input type="number" step="0.01" min="0" {...register('valor_bem', { required: true, min: 1 })} className="input" placeholder="0,00" />
+              <Controller
+                name="valor_bem"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className="input"
+                    placeholder="0,00"
+                    value={field.value || ''}
+                    onChange={(e) => field.onChange(formatCurrencyInput(e.target.value))}
+                  />
+                )}
+              />
               {errors.valor_bem && <p className="text-red-500 text-xs mt-1">Campo obrigatório</p>}
             </div>
           </div>

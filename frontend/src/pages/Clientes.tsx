@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { Plus, Search, Pencil, Trash2, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -7,6 +7,7 @@ import { clientesApi } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
 import PageHeader from '../components/PageHeader'
 import type { Cliente } from '../types'
+import { formatCurrencyInput, parseCurrencyInput } from '../lib/utils'
 
 const UF_LIST = [
   'AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
@@ -34,6 +35,7 @@ export default function ClientesPage() {
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     trigger,
@@ -346,7 +348,23 @@ export default function ClientesPage() {
                   </div>
                   <div>
                     <label className="label">Renda (R$)</label>
-                    <input type="number" step="0.01" {...register('renda', { valueAsNumber: true })} className="input" />
+                    <Controller
+                      name="renda"
+                      control={control}
+                      render={({ field }) => (
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          className="input"
+                          placeholder="0,00"
+                          value={field.value ? formatCurrencyInput(field.value) : ''}
+                          onChange={(e) => {
+                            const parsed = parseCurrencyInput(e.target.value)
+                            field.onChange(Number.isFinite(parsed) ? parsed : null)
+                          }}
+                        />
+                      )}
+                    />
                   </div>
                 </div>
               )}

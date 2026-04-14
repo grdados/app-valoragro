@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { Plus, Pencil, CheckCircle, XCircle, AlertCircle, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { licencasApi } from '../services/api'
 import PageHeader from '../components/PageHeader'
-import { formatCurrency, formatDate } from '../lib/utils'
+import { formatCurrency, formatCurrencyInput, formatDate, parseCurrencyInput } from '../lib/utils'
 import { useAuth } from '../hooks/useAuth'
 import type { Licenca, PagamentoLicenca } from '../types'
 
@@ -22,7 +22,7 @@ export default function LicencasPage() {
   const [showPagModal, setShowPagModal] = useState(false)
   const [editing, setEditing] = useState<Licenca | null>(null)
   const [selectedLicenca, setSelectedLicenca] = useState<Licenca | null>(null)
-  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<Licenca>()
+  const { register, control, handleSubmit, reset, formState: { isSubmitting } } = useForm<Licenca>()
   const pagForm = useForm<PagamentoLicenca>()
 
   const load = async () => {
@@ -179,7 +179,23 @@ export default function LicencasPage() {
                 </div>
                 <div>
                   <label className="label">Mensalidade (R$)</label>
-                  <input type="number" step="0.01" {...register('valor_mensalidade', { valueAsNumber: true })} className="input" />
+                  <Controller
+                    name="valor_mensalidade"
+                    control={control}
+                    render={({ field }) => (
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        className="input"
+                        placeholder="0,00"
+                        value={field.value ? formatCurrencyInput(field.value) : ''}
+                        onChange={(e) => {
+                          const parsed = parseCurrencyInput(e.target.value)
+                          field.onChange(Number.isFinite(parsed) ? parsed : 0)
+                        }}
+                      />
+                    )}
+                  />
                 </div>
                 <div>
                   <label className="label">Status</label>
@@ -234,7 +250,24 @@ export default function LicencasPage() {
               </div>
               <div>
                 <label className="label">Valor (R$)</label>
-                <input type="number" step="0.01" {...pagForm.register('valor', { required: true, valueAsNumber: true })} className="input" />
+                <Controller
+                  name="valor"
+                  control={pagForm.control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      className="input"
+                      placeholder="0,00"
+                      value={field.value ? formatCurrencyInput(field.value) : ''}
+                      onChange={(e) => {
+                        const parsed = parseCurrencyInput(e.target.value)
+                        field.onChange(Number.isFinite(parsed) ? parsed : 0)
+                      }}
+                    />
+                  )}
+                />
               </div>
               <div>
                 <label className="label">Status</label>

@@ -1,19 +1,19 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { faixasApi, consorciosApi } from '../../services/api'
 import PageHeader from '../../components/PageHeader'
 import DataTable from '../../components/DataTable'
 import Modal from '../../components/Modal'
-import { useForm } from 'react-hook-form'
-import { formatCurrency } from '../../lib/utils'
+import { Controller, useForm } from 'react-hook-form'
+import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from '../../lib/utils'
 import toast from 'react-hot-toast'
 import type { FaixaComissao, Consorcio } from '../../types'
 
 interface FormData {
   consorcio: number
   perfil: 'vendedor' | 'coordenador' | 'supervisor'
-  valor_min: number
-  valor_max: number
+  valor_min: string
+  valor_max: string
   percentual_total: number
   qtd_parcelas: number
   ativo: boolean
@@ -36,6 +36,7 @@ export default function FaixasPage() {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<FormData>()
 
@@ -62,6 +63,8 @@ export default function FaixasPage() {
       ativo: true,
       perfil: 'vendedor',
       qtd_parcelas: 1,
+      valor_min: '',
+      valor_max: '',
     })
     setModalOpen(true)
   }
@@ -71,8 +74,8 @@ export default function FaixasPage() {
     reset({
       consorcio: item.consorcio,
       perfil: item.perfil,
-      valor_min: item.valor_min,
-      valor_max: item.valor_max,
+      valor_min: formatCurrencyInput(item.valor_min),
+      valor_max: formatCurrencyInput(item.valor_max),
       percentual_total: item.percentual_total,
       qtd_parcelas: item.qtd_parcelas,
       ativo: item.ativo,
@@ -83,11 +86,20 @@ export default function FaixasPage() {
   const onSubmit = async (data: FormData) => {
     setSaving(true)
     try {
+      const valorMin = parseCurrencyInput(data.valor_min)
+      const valorMax = parseCurrencyInput(data.valor_max)
+
+      if (!Number.isFinite(valorMin) || !Number.isFinite(valorMax)) {
+        toast.error('Informe valores válidos para mínimo e máximo.')
+        setSaving(false)
+        return
+      }
+
       const payload = {
         consorcio: data.consorcio,
         perfil: data.perfil,
-        valor_min: data.valor_min,
-        valor_max: data.valor_max,
+        valor_min: valorMin,
+        valor_max: valorMax,
         percentual_total: data.percentual_total,
         qtd_parcelas: data.qtd_parcelas,
         ativo: data.ativo,
@@ -200,11 +212,41 @@ export default function FaixasPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="label">Valor Mínimo (R$) *</label>
-              <input type="number" step="0.01" {...register('valor_min', { required: true, valueAsNumber: true })} className="input" />
+              <Controller
+                name="valor_min"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className="input"
+                    placeholder="0,00"
+                    value={field.value || ''}
+                    onChange={(e) => field.onChange(formatCurrencyInput(e.target.value))}
+                  />
+                )}
+              />
+              {errors.valor_min && <p className="text-red-500 text-xs mt-1">Obrigatório</p>}
             </div>
             <div>
               <label className="label">Valor Máximo (R$) *</label>
-              <input type="number" step="0.01" {...register('valor_max', { required: true, valueAsNumber: true })} className="input" />
+              <Controller
+                name="valor_max"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className="input"
+                    placeholder="0,00"
+                    value={field.value || ''}
+                    onChange={(e) => field.onChange(formatCurrencyInput(e.target.value))}
+                  />
+                )}
+              />
+              {errors.valor_max && <p className="text-red-500 text-xs mt-1">Obrigatório</p>}
             </div>
           </div>
 
@@ -239,3 +281,4 @@ export default function FaixasPage() {
     </div>
   )
 }
+
