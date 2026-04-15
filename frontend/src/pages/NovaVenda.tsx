@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Controller, useForm } from 'react-hook-form'
 import { ArrowLeft, Search, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { vendasApi, vendedoresApi, cobansApi, tiposBemApi, comissoesApi, clientesApi, faixasVendedorApi } from '../services/api'
+import { vendasApi, vendedoresApi, cobansApi, tiposBemApi, comissoesApi, clientesApi } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
 import PageHeader from '../components/PageHeader'
 import { formatCurrency, formatCurrencyInput, formatDate, parseCurrencyInput } from '../lib/utils'
@@ -17,87 +17,6 @@ interface FormData {
   coban: number
   tipo_bem: number
   valor_bem: string
-}
-
-type FaixaVendedor = {
-  id: number
-  valor_min: number | string
-  valor_max: number | string
-  percentual_total: number | string
-  qtd_parcelas: number
-  ativo: boolean
-}
-
-const toNumberSafe = (value: unknown): number => {
-  if (typeof value === 'number') return value
-  if (typeof value !== 'string') return Number(value) || 0
-  const raw = value.trim()
-  if (!raw) return 0
-  if (raw.includes(',') && raw.includes('.')) {
-    // Ex.: 1.500.000,50
-    return Number(raw.replace(/\./g, '').replace(',', '.')) || 0
-  }
-  if (raw.includes(',')) {
-    return Number(raw.replace(',', '.')) || 0
-  }
-  return Number(raw) || 0
-}
-
-const pickFaixaVendedor = (faixas: FaixaVendedor[], valorBem: number): FaixaVendedor | undefined => {
-  const candidatas = faixas
-    .filter((f) => f.ativo)
-    .map((f) => {
-      const min = toNumberSafe(f.valor_min)
-      const max = toNumberSafe(f.valor_max)
-      return { faixa: f, min, max, largura: max - min }
-    })
-    .filter((x) => valorBem >= x.min && valorBem <= x.max)
-    .sort((a, b) => {
-      // 1) Faixa mais específica (menor intervalo)
-      if (a.largura !== b.largura) return a.largura - b.largura
-      // 2) Mais recente
-      return (b.faixa.id || 0) - (a.faixa.id || 0)
-    })
-
-  return candidatas[0]?.faixa
-}
-
-const buildPlanoVendedor = (
-  valorBem: number,
-  percentualTotal: number,
-  qtdParcelas: number,
-  datasBase: string[]
-): { parcelas: PlanoParcelaPreview[]; total: number } => {
-  const total = Number(((valorBem * percentualTotal) / 100).toFixed(2))
-  const percentualParcela = Number((percentualTotal / qtdParcelas).toFixed(4))
-  const valorBaseParcela = Number((total / qtdParcelas).toFixed(2))
-
-  let acumulado = 0
-  const parcelas: PlanoParcelaPreview[] = []
-
-  const getDataVencimento = (index: number): string => {
-    if (datasBase[index]) return datasBase[index]
-    if (datasBase.length > 0) return datasBase[datasBase.length - 1]
-    const base = new Date()
-    base.setMonth(base.getMonth() + index + 1)
-    base.setDate(10)
-    return base.toISOString().slice(0, 10)
-  }
-
-  for (let i = 0; i < qtdParcelas; i++) {
-    const valorParcela =
-      i < qtdParcelas - 1 ? valorBaseParcela : Number((total - acumulado).toFixed(2))
-    acumulado = Number((acumulado + valorParcela).toFixed(2))
-
-    parcelas.push({
-      numero_parcela: i + 1,
-      data_vencimento: getDataVencimento(i),
-      percentual: percentualParcela,
-      valor: valorParcela,
-    })
-  }
-
-  return { parcelas, total }
 }
 
 export default function NovaVendaPage() {
@@ -191,35 +110,8 @@ export default function NovaVendaPage() {
     try {
       const res = await vendasApi.preview({ data_venda, coban: cobanObj.sigla, tipo_bem: tipoBemObj.nome, valor_bem, consorcio_id: consorcioId })
       if (res.data.parcelas) {
-        let parcelasPreview: PlanoParcelaPreview[] = res.data.parcelas
-        let totalPreview: number = res.data.valor_total_comissao || 0
-
-        try {
-          const faixaResp = await faixasVendedorApi.list()
-          const faixas: FaixaVendedor[] = faixaResp.data.results || faixaResp.data || []
-          const faixaAtiva = pickFaixaVendedor(faixas, valor_bem)
-
-          if (faixaAtiva) {
-            const percentualTotal = toNumberSafe(faixaAtiva.percentual_total)
-            const qtdParcelas = Number(faixaAtiva.qtd_parcelas) || parcelasPreview.length || 1
-            const datasBase =
-              parcelasPreview.map((p) => p.data_vencimento).slice(0, qtdParcelas)
-
-            const planoCalculado = buildPlanoVendedor(
-              valor_bem,
-              percentualTotal,
-              qtdParcelas,
-              datasBase.length ? datasBase : parcelasPreview.map((p) => p.data_vencimento),
-            )
-            parcelasPreview = planoCalculado.parcelas
-            totalPreview = planoCalculado.total
-          }
-        } catch {
-          // Se falhar leitura da tabela do vendedor, mantém preview retornado pelo backend.
-        }
-
-        setPlano(parcelasPreview)
-        setTotalComissao(totalPreview)
+        setPlano(res.data.parcelas)
+        setTotalComissao(res.data.valor_total_comissao || 0)
         setStep(3)
       }
     } catch {

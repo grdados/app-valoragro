@@ -4,7 +4,11 @@ from django.db import models
 
 from .models import ParcelaComissao, LogAlteracao, BonusMensalCoordenador
 from apps.vendas.models import Venda
-from apps.vendas.services import calcular_primeiro_vencimento, calcular_plano_parcelas
+from apps.vendas.services import (
+    calcular_primeiro_vencimento,
+    calcular_plano_parcelas,
+    obter_indice_faixa_supervisor,
+)
 
 BONUS_COORDENADOR_LIMITE = Decimal("3500000.00")
 BONUS_COORDENADOR_PERCENTUAL = Decimal("0.2")
@@ -62,6 +66,7 @@ def gerar_parcelas(venda: Venda, usuario=None) -> list:
         venda.parcelas.all().delete()
 
     primeiro_vencimento = calcular_primeiro_vencimento(venda.data_venda, venda.consorcio)
+    indice_faixa = obter_indice_faixa_supervisor(venda.consorcio, venda.valor_bem)
 
     supervisor_data, total_supervisor_base = calcular_plano_parcelas(
         venda.valor_bem,
@@ -74,12 +79,14 @@ def gerar_parcelas(venda: Venda, usuario=None) -> list:
         venda.consorcio,
         primeiro_vencimento,
         perfil="vendedor",
+        indice_faixa=indice_faixa,
     )
     coordenador_data, _ = calcular_plano_parcelas(
         venda.valor_bem,
         venda.consorcio,
         primeiro_vencimento,
         perfil="coordenador",
+        indice_faixa=indice_faixa,
     )
 
     if not supervisor_data:

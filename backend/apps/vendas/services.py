@@ -40,7 +40,25 @@ def _get_faixa_supervisor(consorcio: Consorcio, valor_bem: Decimal):
     )
 
 
-def _get_faixa_tabela(model, valor_bem: Decimal):
+def obter_indice_faixa_supervisor(consorcio: Consorcio, valor_bem: Decimal):
+    faixas = list(
+        consorcio.faixas.filter(ativo=True)
+        .order_by("valor_min", "id")
+    )
+    for idx, faixa in enumerate(faixas, start=1):
+        if faixa.valor_min <= valor_bem <= faixa.valor_max:
+            return idx
+    return None
+
+
+def _get_faixa_tabela(model, valor_bem: Decimal, indice_faixa: int | None = None):
+    if indice_faixa is not None:
+        faixas = list(model.objects.filter(ativo=True).order_by("valor_min", "id"))
+        if not faixas:
+            return None
+        idx = max(0, min(indice_faixa - 1, len(faixas) - 1))
+        return faixas[idx]
+
     return (
         model.objects.filter(
             ativo=True,
@@ -118,9 +136,9 @@ def calcular_plano_supervisor(valor_bem: Decimal, consorcio: Consorcio, primeiro
     return parcelas, total
 
 
-def calcular_plano_por_tabela(valor_bem: Decimal, primeiro_vencimento: date, perfil: str):
+def calcular_plano_por_tabela(valor_bem: Decimal, primeiro_vencimento: date, perfil: str, indice_faixa: int | None = None):
     model = FaixaComissaoVendedor if perfil == "vendedor" else FaixaComissaoCoordenador
-    faixa = _get_faixa_tabela(model, valor_bem)
+    faixa = _get_faixa_tabela(model, valor_bem, indice_faixa=indice_faixa)
     if not faixa:
         return [], Decimal("0")
 
@@ -149,7 +167,13 @@ def calcular_plano_por_tabela(valor_bem: Decimal, primeiro_vencimento: date, per
     return parcelas, valor_total
 
 
-def calcular_plano_parcelas(valor_bem: Decimal, consorcio: Consorcio, primeiro_vencimento: date, perfil: str = "vendedor"):
+def calcular_plano_parcelas(
+    valor_bem: Decimal,
+    consorcio: Consorcio,
+    primeiro_vencimento: date,
+    perfil: str = "vendedor",
+    indice_faixa: int | None = None,
+):
     if perfil == "supervisor":
         return calcular_plano_supervisor(valor_bem, consorcio, primeiro_vencimento)
-    return calcular_plano_por_tabela(valor_bem, primeiro_vencimento, perfil)
+    return calcular_plano_por_tabela(valor_bem, primeiro_vencimento, perfil, indice_faixa=indice_faixa)

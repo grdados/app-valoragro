@@ -2,7 +2,12 @@
 
 from apps.cadastros.models import Consorcio
 from .models import Venda
-from .services import identificar_faixa, calcular_primeiro_vencimento, calcular_plano_parcelas
+from .services import (
+    identificar_faixa,
+    calcular_primeiro_vencimento,
+    calcular_plano_parcelas,
+    obter_indice_faixa_supervisor,
+)
 
 
 class VendaSerializer(serializers.ModelSerializer):
@@ -75,12 +80,14 @@ class VendaPreviewSerializer(serializers.Serializer):
                 raise serializers.ValidationError("Consórcio não encontrado.") from exc
 
             primeiro_vencimento = calcular_primeiro_vencimento(data_venda, consorcio)
+            indice_faixa = obter_indice_faixa_supervisor(consorcio, valor_bem)
             # A prévia da venda sempre mostra a comissão do vendedor.
             parcelas, total = calcular_plano_parcelas(
                 valor_bem,
                 consorcio,
                 primeiro_vencimento,
                 perfil="vendedor",
+                indice_faixa=indice_faixa,
             )
             if not parcelas:
                 raise serializers.ValidationError(
