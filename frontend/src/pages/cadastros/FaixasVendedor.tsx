@@ -36,8 +36,16 @@ export default function FaixasVendedorPage() {
     try {
       const res = await faixasVendedorApi.list()
       setItems(res.data.results || res.data)
-    } catch {
-      toast.error('Erro ao carregar')
+    } catch (err: unknown) {
+      const error = err as { response?: { status?: number; data?: Record<string, string[] | string> } }
+      const status = error?.response?.status
+      const first = Object.values(error?.response?.data || {})[0]
+      const msg = Array.isArray(first) ? first[0] : first
+      if (status === 404) {
+        toast.error('Endpoint de comissão do vendedor não encontrado no backend. Atualize backend + migrações.')
+      } else {
+        toast.error(String(msg || 'Erro ao carregar'))
+      }
     } finally {
       setLoading(false)
     }
