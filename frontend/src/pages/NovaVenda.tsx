@@ -280,12 +280,15 @@ export default function NovaVendaPage() {
         {plano.length > 0 && (
           <div className="card p-6 space-y-4 mt-4">
             <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-900">Plano de Comissões</h2>
+            <h2 className="text-base font-semibold text-gray-900">Plano de Comissão do Vendedor</h2>
               <div className="text-right">
-                <p className="text-xs text-gray-500">Total de Comissões</p>
+                <p className="text-xs text-gray-500">Total da Comissão do Vendedor</p>
                 <p className="text-lg font-bold text-emerald-600">{formatCurrency(totalComissao)}</p>
               </div>
             </div>
+            <p className="text-xs text-gray-500">
+              Ao confirmar, o sistema gera automaticamente as comissões de Coordenador e Supervisor em segundo plano.
+            </p>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="table-header">

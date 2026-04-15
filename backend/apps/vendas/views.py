@@ -111,5 +111,6 @@ class VendaViewSet(viewsets.ModelViewSet):
             response_data["parcelas"] = data["_parcelas"]
             response_data["valor_total_comissao"] = float(data["_total"])
             response_data["primeiro_vencimento"] = data["_primeiro_vencimento"].isoformat()
+            response_data["perfil_preview"] = "vendedor"
 
         return Response(response_data)

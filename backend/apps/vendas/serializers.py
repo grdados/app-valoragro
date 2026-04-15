@@ -75,7 +75,13 @@ class VendaPreviewSerializer(serializers.Serializer):
                 raise serializers.ValidationError("Consórcio não encontrado.") from exc
 
             primeiro_vencimento = calcular_primeiro_vencimento(data_venda, consorcio)
-            parcelas, total = calcular_plano_parcelas(valor_bem, consorcio, primeiro_vencimento)
+            # A prévia da venda sempre mostra a comissão do vendedor.
+            parcelas, total = calcular_plano_parcelas(
+                valor_bem,
+                consorcio,
+                primeiro_vencimento,
+                perfil="vendedor",
+            )
             if not parcelas:
                 raise serializers.ValidationError(
                     "Consórcio encontrado, mas sem faixa de comissão do Vendedor para o valor informado."
