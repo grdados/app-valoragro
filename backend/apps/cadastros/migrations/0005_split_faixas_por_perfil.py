@@ -1,4 +1,5 @@
-﻿from decimal import Decimal, ROUND_HALF_UP
+﻿import json
+from decimal import Decimal, ROUND_HALF_UP
 
 from django.db import migrations, models
 
@@ -16,55 +17,113 @@ def _build_percentuais(total, qtd):
     return [float(p) for p in percentuais]
 
 
+def _coerce_percentuais(raw):
+    if raw is None:
+        return []
+    if isinstance(raw, list):
+        return raw
+    if isinstance(raw, tuple):
+        return list(raw)
+    if isinstance(raw, str):
+        txt = raw.strip()
+        if not txt:
+            return []
+        try:
+            val = json.loads(txt)
+            if isinstance(val, list):
+                return val
+        except Exception:
+            return []
+    return []
+
+
 def migrar_faixas(apps, schema_editor):
     FaixaComissao = apps.get_model("cadastros", "FaixaComissao")
     FaixaComissaoVendedor = apps.get_model("cadastros", "FaixaComissaoVendedor")
     FaixaComissaoCoordenador = apps.get_model("cadastros", "FaixaComissaoCoordenador")
 
-    faixas = list(FaixaComissao.objects.all().order_by("id"))
+    connection = schema_editor.connection
+    table_name = "cadastros_faixacomissao"
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name = %s
+            """,
+            [table_name],
+        )
+        columns = {row[0] for row in cursor.fetchall()}
+
+    has_perfil = "perfil" in columns
+    has_percentual_total = "percentual_total" in columns
+    has_qtd_parcelas = "qtd_parcelas" in columns
+
+    select_cols = ["id", "consorcio_id", "valor_min", "valor_max", "percentuais", "ativo"]
+    if has_perfil:
+        select_cols.append("perfil")
+    if has_percentual_total:
+        select_cols.append("percentual_total")
+    if has_qtd_parcelas:
+        select_cols.append("qtd_parcelas")
+
+    sql = f"SELECT {', '.join(select_cols)} FROM {table_name} ORDER BY id"
+
+    with connection.cursor() as cursor:
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+
+    idx = {name: i for i, name in enumerate(select_cols)}
     manter_por_chave = {}
 
-    for faixa in faixas:
-        perfil = getattr(faixa, "perfil", "supervisor")
-        percentuais = list(getattr(faixa, "percentuais", []) or [])
+    for row in rows:
+        faixa_id = row[idx["id"]]
+        consorcio_id = row[idx["consorcio_id"]]
+        valor_min = row[idx["valor_min"]]
+        valor_max = row[idx["valor_max"]]
+        ativo = row[idx["ativo"]]
+
+        perfil = row[idx["perfil"]] if has_perfil else "supervisor"
+        percentual_total = row[idx["percentual_total"]] if has_percentual_total else None
+        qtd_parcelas = row[idx["qtd_parcelas"]] if has_qtd_parcelas else None
+
+        percentuais = _coerce_percentuais(row[idx["percentuais"]])
         if not percentuais:
-            percentuais = _build_percentuais(
-                getattr(faixa, "percentual_total", 0),
-                getattr(faixa, "qtd_parcelas", 1),
-            )
-            faixa.percentuais = percentuais
-            faixa.save(update_fields=["percentuais"])
+            percentuais = _build_percentuais(percentual_total, qtd_parcelas)
+            FaixaComissao.objects.filter(id=faixa_id).update(percentuais=percentuais)
 
         if perfil == "vendedor":
             FaixaComissaoVendedor.objects.update_or_create(
-                valor_min=faixa.valor_min,
-                valor_max=faixa.valor_max,
+                valor_min=valor_min,
+                valor_max=valor_max,
                 defaults={
-                    "percentual_total": getattr(faixa, "percentual_total", sum(percentuais)),
-                    "qtd_parcelas": getattr(faixa, "qtd_parcelas", len(percentuais) or 1),
-                    "ativo": faixa.ativo,
+                    "percentual_total": Decimal(str(percentual_total or sum(percentuais))),
+                    "qtd_parcelas": int(qtd_parcelas or len(percentuais) or 1),
+                    "ativo": bool(ativo),
                 },
             )
             continue
 
         if perfil == "coordenador":
             FaixaComissaoCoordenador.objects.update_or_create(
-                valor_min=faixa.valor_min,
-                valor_max=faixa.valor_max,
+                valor_min=valor_min,
+                valor_max=valor_max,
                 defaults={
-                    "percentual_total": getattr(faixa, "percentual_total", sum(percentuais)),
-                    "qtd_parcelas": getattr(faixa, "qtd_parcelas", len(percentuais) or 1),
-                    "ativo": faixa.ativo,
+                    "percentual_total": Decimal(str(percentual_total or sum(percentuais))),
+                    "qtd_parcelas": int(qtd_parcelas or len(percentuais) or 1),
+                    "ativo": bool(ativo),
                 },
             )
             continue
 
-        chave = (faixa.consorcio_id, faixa.valor_min, faixa.valor_max)
+        chave = (consorcio_id, valor_min, valor_max)
         if chave not in manter_por_chave:
-            manter_por_chave[chave] = faixa.id
+            manter_por_chave[chave] = faixa_id
 
     ids_manter = set(manter_por_chave.values())
-    FaixaComissao.objects.exclude(id__in=ids_manter).delete()
+    if ids_manter:
+        FaixaComissao.objects.exclude(id__in=ids_manter).delete()
 
 
 class Migration(migrations.Migration):
@@ -108,9 +167,18 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunPython(migrar_faixas, migrations.RunPython.noop),
-        migrations.RemoveField(model_name="faixacomissao", name="perfil"),
-        migrations.RemoveField(model_name="faixacomissao", name="percentual_total"),
-        migrations.RemoveField(model_name="faixacomissao", name="qtd_parcelas"),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunSQL("ALTER TABLE cadastros_faixacomissao DROP COLUMN IF EXISTS perfil"),
+                migrations.RunSQL("ALTER TABLE cadastros_faixacomissao DROP COLUMN IF EXISTS percentual_total"),
+                migrations.RunSQL("ALTER TABLE cadastros_faixacomissao DROP COLUMN IF EXISTS qtd_parcelas"),
+            ],
+            state_operations=[
+                migrations.RemoveField(model_name="faixacomissao", name="perfil"),
+                migrations.RemoveField(model_name="faixacomissao", name="percentual_total"),
+                migrations.RemoveField(model_name="faixacomissao", name="qtd_parcelas"),
+            ],
+        ),
         migrations.AlterField(
             model_name="faixacomissao",
             name="percentuais",
@@ -126,8 +194,13 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "Faixas de Comissão",
             },
         ),
-        migrations.AlterUniqueTogether(
-            name="faixacomissao",
-            unique_together={("consorcio", "valor_min", "valor_max")},
+        migrations.SeparateDatabaseAndState(
+            database_operations=[],
+            state_operations=[
+                migrations.AlterUniqueTogether(
+                    name="faixacomissao",
+                    unique_together={("consorcio", "valor_min", "valor_max")},
+                ),
+            ],
         ),
     ]
