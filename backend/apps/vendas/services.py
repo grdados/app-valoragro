@@ -52,12 +52,33 @@ def obter_indice_faixa_supervisor(consorcio: Consorcio, valor_bem: Decimal):
 
 
 def _get_faixa_tabela(model, valor_bem: Decimal, indice_faixa: int | None = None):
+    # 1) Regra principal: pega a faixa que cobre o valor e é mais específica.
+    # Em caso de sobreposição, prioriza maior valor_min (faixa mais "alta")
+    # e depois ID mais recente.
+    candidatas = list(
+        model.objects.filter(
+            ativo=True,
+            valor_min__lte=valor_bem,
+            valor_max__gte=valor_bem,
+        )
+    )
+    if candidatas:
+        candidatas.sort(
+            key=lambda f: (
+                f.valor_min,  # maior primeiro
+                -(f.valor_max - f.valor_min),  # menor intervalo primeiro
+                f.id,  # mais recente primeiro
+            ),
+            reverse=True,
+        )
+        return candidatas[0]
+
+    # 2) Fallback por índice da faixa do consórcio (compatibilidade).
     if indice_faixa is not None:
         faixas = list(model.objects.filter(ativo=True).order_by("valor_min", "id"))
-        if not faixas:
-            return None
-        idx = max(0, min(indice_faixa - 1, len(faixas) - 1))
-        return faixas[idx]
+        if faixas:
+            idx = max(0, min(indice_faixa - 1, len(faixas) - 1))
+            return faixas[idx]
 
     return (
         model.objects.filter(
