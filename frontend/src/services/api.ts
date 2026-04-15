@@ -187,18 +187,65 @@ export const faixasApi = {
   remove: (id: number) => api.delete(`/faixas-comissao/${id}/`),
 }
 
+async function withLegacyFaixaFallback<T>(
+  primary: () => Promise<T>,
+  legacy: () => Promise<T>
+): Promise<T> {
+  try {
+    return await primary()
+  } catch (err: unknown) {
+    const status = (err as { response?: { status?: number } })?.response?.status
+    if (status === 404) {
+      return legacy()
+    }
+    throw err
+  }
+}
+
 export const faixasVendedorApi = {
-  list: () => api.get('/faixas-comissao-vendedor/'),
-  create: (data: ApiPayload) => api.post('/faixas-comissao-vendedor/', data),
-  update: (id: number, data: ApiPayload) => api.put(`/faixas-comissao-vendedor/${id}/`, data),
-  remove: (id: number) => api.delete(`/faixas-comissao-vendedor/${id}/`),
+  list: () =>
+    withLegacyFaixaFallback(
+      () => api.get('/faixas-comissao-vendedor/'),
+      () => api.get('/faixas-comissao/', { params: { perfil: 'vendedor' } })
+    ),
+  create: (data: ApiPayload) =>
+    withLegacyFaixaFallback(
+      () => api.post('/faixas-comissao-vendedor/', data),
+      () => api.post('/faixas-comissao/', { ...(data as Record<string, unknown>), perfil: 'vendedor' })
+    ),
+  update: (id: number, data: ApiPayload) =>
+    withLegacyFaixaFallback(
+      () => api.put(`/faixas-comissao-vendedor/${id}/`, data),
+      () => api.put(`/faixas-comissao/${id}/`, { ...(data as Record<string, unknown>), perfil: 'vendedor' })
+    ),
+  remove: (id: number) =>
+    withLegacyFaixaFallback(
+      () => api.delete(`/faixas-comissao-vendedor/${id}/`),
+      () => api.delete(`/faixas-comissao/${id}/`)
+    ),
 }
 
 export const faixasCoordenadorApi = {
-  list: () => api.get('/faixas-comissao-coordenador/'),
-  create: (data: ApiPayload) => api.post('/faixas-comissao-coordenador/', data),
-  update: (id: number, data: ApiPayload) => api.put(`/faixas-comissao-coordenador/${id}/`, data),
-  remove: (id: number) => api.delete(`/faixas-comissao-coordenador/${id}/`),
+  list: () =>
+    withLegacyFaixaFallback(
+      () => api.get('/faixas-comissao-coordenador/'),
+      () => api.get('/faixas-comissao/', { params: { perfil: 'coordenador' } })
+    ),
+  create: (data: ApiPayload) =>
+    withLegacyFaixaFallback(
+      () => api.post('/faixas-comissao-coordenador/', data),
+      () => api.post('/faixas-comissao/', { ...(data as Record<string, unknown>), perfil: 'coordenador' })
+    ),
+  update: (id: number, data: ApiPayload) =>
+    withLegacyFaixaFallback(
+      () => api.put(`/faixas-comissao-coordenador/${id}/`, data),
+      () => api.put(`/faixas-comissao/${id}/`, { ...(data as Record<string, unknown>), perfil: 'coordenador' })
+    ),
+  remove: (id: number) =>
+    withLegacyFaixaFallback(
+      () => api.delete(`/faixas-comissao-coordenador/${id}/`),
+      () => api.delete(`/faixas-comissao/${id}/`)
+    ),
 }
 
 export const assembleiasApi = {
