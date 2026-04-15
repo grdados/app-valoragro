@@ -92,13 +92,20 @@ export interface COBAN {
 export interface FaixaComissao {
   id: number
   consorcio: number
-  perfil: 'vendedor' | 'coordenador' | 'supervisor'
-  perfil_display: string
+  valor_min: number
+  valor_max: number
+  percentuais: number[]
+  percentual_total: number
+  qtd_parcelas: number
+  ativo: boolean
+}
+
+export interface FaixaComissaoPerfil {
+  id: number
   valor_min: number
   valor_max: number
   percentual_total: number
   qtd_parcelas: number
-  percentuais: number[]
   ativo: boolean
 }
 

@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions
+﻿from rest_framework import viewsets, permissions
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -7,11 +7,32 @@ from django.core.files.storage import default_storage
 from uuid import uuid4
 from pathlib import Path
 from apps.accounts.permissions import IsAdmin, IsSupervisorOrAbove, IsAdminOrCoordenador
-from .models import Supervisor, Cliente, Coordenador, Vendedor, TipoBem, COBAN, Consorcio, FaixaComissao, Assembleia
+from .models import (
+    Supervisor,
+    Cliente,
+    Coordenador,
+    Vendedor,
+    TipoBem,
+    COBAN,
+    Consorcio,
+    FaixaComissao,
+    FaixaComissaoVendedor,
+    FaixaComissaoCoordenador,
+    Assembleia,
+)
 from .serializers import (
-    SupervisorSerializer, ClienteSerializer, CoordenadorSerializer, VendedorSerializer,
-    PublicVendedorSerializer, TipoBemSerializer, COBANSerializer, ConsorcioSerializer,
-    FaixaComissaoSerializer, AssembleiaSerializer,
+    SupervisorSerializer,
+    ClienteSerializer,
+    CoordenadorSerializer,
+    VendedorSerializer,
+    PublicVendedorSerializer,
+    TipoBemSerializer,
+    COBANSerializer,
+    ConsorcioSerializer,
+    FaixaComissaoSerializer,
+    FaixaComissaoVendedorSerializer,
+    FaixaComissaoCoordenadorSerializer,
+    AssembleiaSerializer,
 )
 
 
@@ -60,11 +81,9 @@ class CoordenadorViewSet(viewsets.ModelViewSet):
             if user.is_supervisor():
                 if user.supervisor_ref:
                     qs = qs.filter(supervisor=user.supervisor_ref)
-                # supervisor with no ref sees all coordenadores
             elif user.is_coordenador():
                 if user.coordenador_ref:
                     qs = qs.filter(id=user.coordenador_ref.id)
-                # coordenador with no ref sees all (to pick self in forms)
             else:
                 qs = qs.none()
         if ativo is not None:
@@ -88,7 +107,6 @@ class VendedorViewSet(viewsets.ModelViewSet):
         elif user.is_supervisor():
             if user.supervisor_ref:
                 qs = qs.filter(coordenador__supervisor=user.supervisor_ref)
-            # supervisor with no ref sees all vendedores
         elif user.is_coordenador() and user.coordenador_ref:
             qs = qs.filter(coordenador=user.coordenador_ref)
         else:
@@ -130,7 +148,6 @@ class VendedorViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="upload_foto")
     def upload_foto_legacy(self, request, pk=None):
-        # Compatibilidade com frontend/ambientes legados que usam underscore.
         return self.upload_foto(request, pk=pk)
 
 
@@ -180,6 +197,18 @@ class ConsorcioViewSet(viewsets.ModelViewSet):
 class FaixaComissaoViewSet(viewsets.ModelViewSet):
     queryset = FaixaComissao.objects.select_related("consorcio")
     serializer_class = FaixaComissaoSerializer
+    permission_classes = [permissions.IsAuthenticated, IsSupervisorOrAbove]
+
+
+class FaixaComissaoVendedorViewSet(viewsets.ModelViewSet):
+    queryset = FaixaComissaoVendedor.objects.all()
+    serializer_class = FaixaComissaoVendedorSerializer
+    permission_classes = [permissions.IsAuthenticated, IsSupervisorOrAbove]
+
+
+class FaixaComissaoCoordenadorViewSet(viewsets.ModelViewSet):
+    queryset = FaixaComissaoCoordenador.objects.all()
+    serializer_class = FaixaComissaoCoordenadorSerializer
     permission_classes = [permissions.IsAuthenticated, IsSupervisorOrAbove]
 
 

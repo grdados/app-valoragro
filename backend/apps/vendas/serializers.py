@@ -1,7 +1,8 @@
-from rest_framework import serializers
+﻿from rest_framework import serializers
+
+from apps.cadastros.models import Consorcio
 from .models import Venda
 from .services import identificar_faixa, calcular_primeiro_vencimento, calcular_plano_parcelas
-from apps.cadastros.models import Consorcio
 
 
 class VendaSerializer(serializers.ModelSerializer):
@@ -58,7 +59,7 @@ class VendaPreviewSerializer(serializers.Serializer):
         if not consorcios:
             if consorcios_base.exists():
                 raise serializers.ValidationError(
-                    "Consórcio encontrado, mas sem faixa de comissão para o valor informado."
+                    "Consórcio encontrado, mas sem faixa de comissão do Supervisor para o valor informado."
                 )
             raise serializers.ValidationError(
                 "Nenhum consórcio encontrado para os parâmetros informados."
@@ -70,13 +71,18 @@ class VendaPreviewSerializer(serializers.Serializer):
         if attrs.get("consorcio_id") is not None:
             try:
                 consorcio = Consorcio.objects.get(id=attrs["consorcio_id"])
-                primeiro_vencimento = calcular_primeiro_vencimento(data_venda, consorcio)
-                parcelas, total = calcular_plano_parcelas(valor_bem, consorcio, primeiro_vencimento)
-                attrs["_parcelas"] = parcelas
-                attrs["_total"] = total
-                attrs["_primeiro_vencimento"] = primeiro_vencimento
-                attrs["_consorcio"] = consorcio
-            except Consorcio.DoesNotExist:
-                raise serializers.ValidationError("Consórcio não encontrado.")
+            except Consorcio.DoesNotExist as exc:
+                raise serializers.ValidationError("Consórcio não encontrado.") from exc
+
+            primeiro_vencimento = calcular_primeiro_vencimento(data_venda, consorcio)
+            parcelas, total = calcular_plano_parcelas(valor_bem, consorcio, primeiro_vencimento)
+            if not parcelas:
+                raise serializers.ValidationError(
+                    "Consórcio encontrado, mas sem faixa de comissão do Vendedor para o valor informado."
+                )
+            attrs["_parcelas"] = parcelas
+            attrs["_total"] = total
+            attrs["_primeiro_vencimento"] = primeiro_vencimento
+            attrs["_consorcio"] = consorcio
 
         return attrs

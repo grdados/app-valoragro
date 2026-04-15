@@ -2,7 +2,8 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     SupervisorViewSet, ClienteViewSet, CoordenadorViewSet, VendedorViewSet,
-    TipoBemViewSet, COBANViewSet, ConsorcioViewSet, FaixaComissaoViewSet, AssembleiaViewSet,
+    TipoBemViewSet, COBANViewSet, ConsorcioViewSet, FaixaComissaoViewSet,
+    FaixaComissaoVendedorViewSet, FaixaComissaoCoordenadorViewSet, AssembleiaViewSet,
     PublicVendedoresListView,
 )
 
@@ -15,6 +16,8 @@ router.register("tipos-bem", TipoBemViewSet, basename="tipos-bem")
 router.register("cobans", COBANViewSet, basename="cobans")
 router.register("consorcios", ConsorcioViewSet, basename="consorcios")
 router.register("faixas-comissao", FaixaComissaoViewSet, basename="faixas-comissao")
+router.register("faixas-comissao-vendedor", FaixaComissaoVendedorViewSet, basename="faixas-comissao-vendedor")
+router.register("faixas-comissao-coordenador", FaixaComissaoCoordenadorViewSet, basename="faixas-comissao-coordenador")
 router.register("assembleias", AssembleiaViewSet, basename="assembleias")
 
 urlpatterns = [

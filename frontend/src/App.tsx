@@ -19,6 +19,8 @@ import SupervisoresPage from './pages/cadastros/Supervisores'
 import ConsorciosPage from './pages/cadastros/Consorcios'
 import AssembleiasPage from './pages/cadastros/Assembleias'
 import FaixasPage from './pages/cadastros/Faixas'
+import FaixasVendedorPage from './pages/cadastros/FaixasVendedor'
+import FaixasCoordenadorPage from './pages/cadastros/FaixasCoordenador'
 import UsuariosPage from './pages/cadastros/Usuarios'
 import CobansPage from './pages/cadastros/Cobans'
 import TiposBemPage from './pages/cadastros/TiposBem'
@@ -73,6 +75,8 @@ function AppRoutes() {
           <Route path="cadastros/cobans" element={<CobansPage />} />
           <Route path="cadastros/tipos-bem" element={<TiposBemPage />} />
           <Route path="cadastros/faixas" element={<FaixasPage />} />
+          <Route path="cadastros/faixas-vendedor" element={<FaixasVendedorPage />} />
+          <Route path="cadastros/faixas-coordenador" element={<FaixasCoordenadorPage />} />
           <Route path="cadastros/usuarios" element={<UsuariosPage />} />
         </Route>
         <Route path="/dashboard" element={<Navigate to="/painel/dashboard" replace />} />
@@ -92,6 +96,8 @@ function AppRoutes() {
         <Route path="/cadastros/cobans" element={<Navigate to="/painel/cadastros/cobans" replace />} />
         <Route path="/cadastros/tipos-bem" element={<Navigate to="/painel/cadastros/tipos-bem" replace />} />
         <Route path="/cadastros/faixas" element={<Navigate to="/painel/cadastros/faixas" replace />} />
+        <Route path="/cadastros/faixas-vendedor" element={<Navigate to="/painel/cadastros/faixas-vendedor" replace />} />
+        <Route path="/cadastros/faixas-coordenador" element={<Navigate to="/painel/cadastros/faixas-coordenador" replace />} />
         <Route path="/cadastros/usuarios" element={<Navigate to="/painel/cadastros/usuarios" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

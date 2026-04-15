@@ -187,6 +187,20 @@ export const faixasApi = {
   remove: (id: number) => api.delete(`/faixas-comissao/${id}/`),
 }
 
+export const faixasVendedorApi = {
+  list: () => api.get('/faixas-comissao-vendedor/'),
+  create: (data: ApiPayload) => api.post('/faixas-comissao-vendedor/', data),
+  update: (id: number, data: ApiPayload) => api.put(`/faixas-comissao-vendedor/${id}/`, data),
+  remove: (id: number) => api.delete(`/faixas-comissao-vendedor/${id}/`),
+}
+
+export const faixasCoordenadorApi = {
+  list: () => api.get('/faixas-comissao-coordenador/'),
+  create: (data: ApiPayload) => api.post('/faixas-comissao-coordenador/', data),
+  update: (id: number, data: ApiPayload) => api.put(`/faixas-comissao-coordenador/${id}/`, data),
+  remove: (id: number) => api.delete(`/faixas-comissao-coordenador/${id}/`),
+}
+
 export const assembleiasApi = {
   list: () => api.get('/assembleias/'),
   create: (data: ApiPayload) => api.post('/assembleias/', data),

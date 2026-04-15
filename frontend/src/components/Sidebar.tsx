@@ -55,7 +55,9 @@ const geraisNav: NavItem[] = [
   { to: '/painel/cadastros/assembleias', icon: Calendar, label: 'Assembleias' },
   { to: '/painel/cadastros/cobans', icon: Landmark, label: 'COBAN' },
   { to: '/painel/cadastros/tipos-bem', icon: Boxes, label: 'Tipo de Bem' },
-  { to: '/painel/cadastros/faixas', icon: Layers, label: 'Faixa da Comissão' },
+  { to: '/painel/cadastros/faixas', icon: Layers, label: 'Comissão Supervisor' },
+  { to: '/painel/cadastros/faixas-vendedor', icon: Layers, label: 'Comissão Vendedor' },
+  { to: '/painel/cadastros/faixas-coordenador', icon: Layers, label: 'Comissão Coordenador' },
 ]
 
 const administrativoNav: NavItem[] = [
@@ -92,6 +94,8 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
         '/painel/cadastros/cobans',
         '/painel/cadastros/tipos-bem',
         '/painel/cadastros/faixas',
+        '/painel/cadastros/faixas-vendedor',
+        '/painel/cadastros/faixas-coordenador',
       ].some((route) => location.pathname.startsWith(route)),
     [location.pathname]
   )

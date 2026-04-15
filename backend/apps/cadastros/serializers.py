@@ -1,6 +1,18 @@
 ﻿from rest_framework import serializers
 from django.conf import settings
-from .models import Supervisor, Cliente, Coordenador, Vendedor, TipoBem, COBAN, Consorcio, FaixaComissao, Assembleia
+from .models import (
+    Supervisor,
+    Cliente,
+    Coordenador,
+    Vendedor,
+    TipoBem,
+    COBAN,
+    Consorcio,
+    FaixaComissao,
+    FaixaComissaoVendedor,
+    FaixaComissaoCoordenador,
+    Assembleia,
+)
 
 
 class SupervisorSerializer(serializers.ModelSerializer):
@@ -126,22 +138,56 @@ class COBANSerializer(serializers.ModelSerializer):
 
 
 class FaixaComissaoSerializer(serializers.ModelSerializer):
-    perfil_display = serializers.CharField(source="get_perfil_display", read_only=True)
+    qtd_parcelas = serializers.SerializerMethodField()
+    percentual_total = serializers.SerializerMethodField()
 
     class Meta:
         model = FaixaComissao
         fields = [
             "id",
             "consorcio",
-            "perfil",
-            "perfil_display",
             "valor_min",
             "valor_max",
-            "percentual_total",
-            "qtd_parcelas",
             "percentuais",
+            "qtd_parcelas",
+            "percentual_total",
             "ativo",
         ]
+
+    def get_qtd_parcelas(self, obj):
+        return len(obj.percentuais or [])
+
+    def get_percentual_total(self, obj):
+        return round(sum(float(p) for p in (obj.percentuais or [])), 4)
+
+    def validate(self, attrs):
+        valor_min = attrs.get("valor_min", getattr(self.instance, "valor_min", None))
+        valor_max = attrs.get("valor_max", getattr(self.instance, "valor_max", None))
+        percentuais = attrs.get("percentuais", getattr(self.instance, "percentuais", []))
+
+        if valor_min is not None and valor_max is not None and valor_min > valor_max:
+            raise serializers.ValidationError({"valor_max": "Valor máximo deve ser maior ou igual ao valor mínimo."})
+
+        if not isinstance(percentuais, list) or not percentuais:
+            raise serializers.ValidationError({"percentuais": "Informe pelo menos um percentual de parcela."})
+
+        normalizados = []
+        for idx, percentual in enumerate(percentuais, start=1):
+            try:
+                valor = float(percentual)
+            except (TypeError, ValueError):
+                raise serializers.ValidationError({"percentuais": f"Parcela {idx} inválida."})
+            if valor <= 0:
+                raise serializers.ValidationError({"percentuais": f"Parcela {idx} deve ser maior que zero."})
+            normalizados.append(round(valor, 4))
+
+        attrs["percentuais"] = normalizados
+        return attrs
+
+
+class _BaseFaixaPerfilSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ["id", "valor_min", "valor_max", "percentual_total", "qtd_parcelas", "ativo"]
 
     def validate(self, attrs):
         valor_min = attrs.get("valor_min", getattr(self.instance, "valor_min", None))
@@ -161,6 +207,16 @@ class FaixaComissaoSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class FaixaComissaoVendedorSerializer(_BaseFaixaPerfilSerializer):
+    class Meta(_BaseFaixaPerfilSerializer.Meta):
+        model = FaixaComissaoVendedor
+
+
+class FaixaComissaoCoordenadorSerializer(_BaseFaixaPerfilSerializer):
+    class Meta(_BaseFaixaPerfilSerializer.Meta):
+        model = FaixaComissaoCoordenador
+
+
 class AssembleiaSerializer(serializers.ModelSerializer):
     consorcio_nome = serializers.CharField(source="consorcio.nome", read_only=True)
 
@@ -171,7 +227,7 @@ class AssembleiaSerializer(serializers.ModelSerializer):
 
 class ConsorcioSerializer(serializers.ModelSerializer):
     coban_sigla = serializers.CharField(source="coban.sigla", read_only=True)
-    tipo_bem_nome = serializers.CharField(source="tipo_bem.get_nome_display", read_only=True)
+    tipo_bem_nome = serializers.CharField(source="tipo_bem.descricao", read_only=True)
     faixas = FaixaComissaoSerializer(many=True, read_only=True)
     assembleias = AssembleiaSerializer(many=True, read_only=True)
 
@@ -183,4 +239,3 @@ class ConsorcioSerializer(serializers.ModelSerializer):
             "faixas", "assembleias",
         ]
         read_only_fields = ["id", "criado_em"]
-

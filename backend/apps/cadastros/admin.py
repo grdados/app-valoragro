@@ -1,5 +1,15 @@
 from django.contrib import admin
-from .models import Coordenador, Vendedor, TipoBem, COBAN, Consorcio, FaixaComissao, Assembleia
+from .models import (
+    Coordenador,
+    Vendedor,
+    TipoBem,
+    COBAN,
+    Consorcio,
+    FaixaComissao,
+    FaixaComissaoVendedor,
+    FaixaComissaoCoordenador,
+    Assembleia,
+)
 
 
 @admin.register(Coordenador)
@@ -36,6 +46,16 @@ class ConsorcioAdmin(admin.ModelAdmin):
 @admin.register(FaixaComissao)
 class FaixaComissaoAdmin(admin.ModelAdmin):
     list_display = ("consorcio", "valor_min", "valor_max", "ativo")
+
+
+@admin.register(FaixaComissaoVendedor)
+class FaixaComissaoVendedorAdmin(admin.ModelAdmin):
+    list_display = ("valor_min", "valor_max", "percentual_total", "qtd_parcelas", "ativo")
+
+
+@admin.register(FaixaComissaoCoordenador)
+class FaixaComissaoCoordenadorAdmin(admin.ModelAdmin):
+    list_display = ("valor_min", "valor_max", "percentual_total", "qtd_parcelas", "ativo")
 
 
 @admin.register(Assembleia)

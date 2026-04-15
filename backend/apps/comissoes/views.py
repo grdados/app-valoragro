@@ -116,5 +116,8 @@ class ParcelaComissaoViewSet(viewsets.ReadOnlyModelViewSet):
             if user.is_vendedor() and venda.vendedor != user.vendedor_ref:
                 return Response({"detail": "Sem permissão."}, status=status.HTTP_403_FORBIDDEN)
 
-        parcelas = gerar_parcelas(venda, usuario=request.user)
+        try:
+            parcelas = gerar_parcelas(venda, usuario=request.user)
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(ParcelaComissaoSerializer(parcelas, many=True).data, status=status.HTTP_201_CREATED)

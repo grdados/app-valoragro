@@ -1,5 +1,6 @@
 ﻿from django.db import models
 from apps.vendas.models import Venda
+from apps.cadastros.models import Coordenador
 
 
 class ParcelaComissao(models.Model):
@@ -55,3 +56,27 @@ class LogAlteracao(models.Model):
 
     def __str__(self):
         return f"{self.parcela} | {self.status_anterior} -> {self.status_novo}"
+
+
+class BonusMensalCoordenador(models.Model):
+    coordenador = models.ForeignKey(
+        Coordenador,
+        on_delete=models.CASCADE,
+        related_name="bonus_mensais",
+    )
+    ano = models.PositiveIntegerField()
+    mes = models.PositiveIntegerField()
+    total_vendas_mes = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    percentual_bonus = models.DecimalField(max_digits=7, decimal_places=4, default=0)
+    valor_bonus = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Bônus Mensal do Coordenador"
+        verbose_name_plural = "Bônus Mensal do Coordenador"
+        ordering = ["-ano", "-mes", "coordenador__nome"]
+        unique_together = [["coordenador", "ano", "mes"]]
+
+    def __str__(self):
+        return f"{self.coordenador.nome} - {self.mes:02d}/{self.ano}"

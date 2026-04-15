@@ -1,55 +1,41 @@
 ﻿import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
-import { faixasApi, consorciosApi } from '../../services/api'
+import { faixasVendedorApi } from '../../services/api'
 import PageHeader from '../../components/PageHeader'
 import DataTable from '../../components/DataTable'
 import Modal from '../../components/Modal'
 import { Controller, useForm } from 'react-hook-form'
 import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from '../../lib/utils'
 import toast from 'react-hot-toast'
-import type { FaixaComissao, Consorcio } from '../../types'
+import type { FaixaComissaoPerfil } from '../../types'
 
 interface FormData {
-  consorcio: number
   valor_min: string
   valor_max: string
+  percentual_total: number
   qtd_parcelas: number
-  percentuais_texto: string
   ativo: boolean
 }
 
-function parsePercentuais(input: string): number[] {
-  return input
-    .split(/[,;\n]+/)
-    .map((v) => Number(String(v).trim().replace(',', '.')))
-    .filter((v) => Number.isFinite(v) && v > 0)
-    .map((v) => Number(v.toFixed(4)))
-}
-
-export default function FaixasPage() {
-  const [items, setItems] = useState<FaixaComissao[]>([])
-  const [consorcios, setConsorcios] = useState<Consorcio[]>([])
+export default function FaixasVendedorPage() {
+  const [items, setItems] = useState<FaixaComissaoPerfil[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
-  const [editing, setEditing] = useState<FaixaComissao | null>(null)
+  const [editing, setEditing] = useState<FaixaComissaoPerfil | null>(null)
   const [saving, setSaving] = useState(false)
   const {
     register,
     handleSubmit,
     reset,
-    watch,
     control,
     formState: { errors },
-  } = useForm<FormData>({ defaultValues: { qtd_parcelas: 10, ativo: true } })
-
-  const qtdParcelas = Number(watch('qtd_parcelas') || 0)
+  } = useForm<FormData>()
 
   const fetch = async () => {
     setLoading(true)
     try {
-      const [f, c] = await Promise.all([faixasApi.list(), consorciosApi.list()])
-      setItems(f.data.results || f.data)
-      setConsorcios(c.data.results || c.data)
+      const res = await faixasVendedorApi.list()
+      setItems(res.data.results || res.data)
     } catch {
       toast.error('Erro ao carregar')
     } finally {
@@ -63,24 +49,17 @@ export default function FaixasPage() {
 
   const openCreate = () => {
     setEditing(null)
-    reset({
-      ativo: true,
-      qtd_parcelas: 10,
-      valor_min: '',
-      valor_max: '',
-      percentuais_texto: '',
-    })
+    reset({ ativo: true, qtd_parcelas: 10, valor_min: '', valor_max: '', percentual_total: 0 })
     setModalOpen(true)
   }
 
-  const openEdit = (item: FaixaComissao) => {
+  const openEdit = (item: FaixaComissaoPerfil) => {
     setEditing(item)
     reset({
-      consorcio: item.consorcio,
       valor_min: formatCurrencyInput(item.valor_min),
       valor_max: formatCurrencyInput(item.valor_max),
-      qtd_parcelas: item.percentuais?.length || 1,
-      percentuais_texto: (item.percentuais || []).join(', '),
+      percentual_total: item.percentual_total,
+      qtd_parcelas: item.qtd_parcelas,
       ativo: item.ativo,
     })
     setModalOpen(true)
@@ -89,33 +68,19 @@ export default function FaixasPage() {
   const onSubmit = async (data: FormData) => {
     setSaving(true)
     try {
-      const valorMin = parseCurrencyInput(data.valor_min)
-      const valorMax = parseCurrencyInput(data.valor_max)
-      const percentuais = parsePercentuais(data.percentuais_texto)
-
-      if (!Number.isFinite(valorMin) || !Number.isFinite(valorMax)) {
-        toast.error('Informe valores válidos para mínimo e máximo.')
-        return
-      }
-
-      if (percentuais.length !== Number(data.qtd_parcelas)) {
-        toast.error(`Informe exatamente ${data.qtd_parcelas} percentuais.`)
-        return
-      }
-
       const payload = {
-        consorcio: data.consorcio,
-        valor_min: valorMin,
-        valor_max: valorMax,
-        percentuais,
+        valor_min: parseCurrencyInput(data.valor_min),
+        valor_max: parseCurrencyInput(data.valor_max),
+        percentual_total: Number(data.percentual_total),
+        qtd_parcelas: Number(data.qtd_parcelas),
         ativo: data.ativo,
       }
 
       if (editing) {
-        await faixasApi.update(editing.id, payload)
+        await faixasVendedorApi.update(editing.id, payload)
         toast.success('Faixa atualizada!')
       } else {
-        await faixasApi.create(payload)
+        await faixasVendedorApi.create(payload)
         toast.success('Faixa criada!')
       }
       setModalOpen(false)
@@ -130,10 +95,10 @@ export default function FaixasPage() {
     }
   }
 
-  const handleDelete = async (item: FaixaComissao) => {
+  const handleDelete = async (item: FaixaComissaoPerfil) => {
     if (!confirm('Remover esta faixa?')) return
     try {
-      await faixasApi.remove(item.id)
+      await faixasVendedorApi.remove(item.id)
       toast.success('Removida!')
       fetch()
     } catch {
@@ -141,18 +106,15 @@ export default function FaixasPage() {
     }
   }
 
-  const getConsorcioNome = (id: number) => consorcios.find((c) => c.id === id)?.nome || '-'
-
   const columns = [
-    { key: 'consorcio', header: 'Consórcio', render: (row: FaixaComissao) => getConsorcioNome(row.consorcio) },
-    { key: 'valor_min', header: 'Valor Mínimo', render: (row: FaixaComissao) => formatCurrency(row.valor_min) },
-    { key: 'valor_max', header: 'Valor Máximo', render: (row: FaixaComissao) => formatCurrency(row.valor_max) },
-    { key: 'percentuais', header: 'Percentuais (%)', render: (row: FaixaComissao) => row.percentuais?.join(', ') },
-    { key: 'qtd_parcelas', header: 'Parcelas', render: (row: FaixaComissao) => row.percentuais?.length || 0 },
+    { key: 'valor_min', header: 'Valor Mínimo', render: (row: FaixaComissaoPerfil) => formatCurrency(row.valor_min) },
+    { key: 'valor_max', header: 'Valor Máximo', render: (row: FaixaComissaoPerfil) => formatCurrency(row.valor_max) },
+    { key: 'percentual_total', header: 'Percentual (%)', render: (row: FaixaComissaoPerfil) => `${Number(row.percentual_total).toFixed(4)}%` },
+    { key: 'qtd_parcelas', header: 'Parcelas' },
     {
       key: 'ativo',
       header: 'Status',
-      render: (row: FaixaComissao) => (
+      render: (row: FaixaComissaoPerfil) => (
         <span className={row.ativo ? 'badge-ativa' : 'badge-cancelada'}>{row.ativo ? 'Ativo' : 'Inativo'}</span>
       ),
     },
@@ -161,8 +123,8 @@ export default function FaixasPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Faixas de Comissão do Supervisor"
-        subtitle="Configure os percentuais por parcela para cada faixa de valor"
+        title="Comissão do Vendedor"
+        subtitle="Faixas por valor do bem para cálculo da comissão do vendedor"
         actions={
           <button onClick={openCreate} className="btn-primary">
             <Plus className="w-4 h-4" />
@@ -187,21 +149,9 @@ export default function FaixasPage() {
           </div>
         )}
       />
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Editar Faixa' : 'Nova Faixa de Comissão'} size="lg">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <label className="label">Consórcio *</label>
-            <select {...register('consorcio', { required: true, valueAsNumber: true })} className="input">
-              <option value="">Selecione</option>
-              {consorcios.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nome}
-                </option>
-              ))}
-            </select>
-            {errors.consorcio && <p className="text-red-500 text-xs mt-1">Obrigatório</p>}
-          </div>
 
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Editar Faixa' : 'Nova Faixa do Vendedor'} size="lg">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="label">Valor Mínimo (R$) *</label>
@@ -243,27 +193,22 @@ export default function FaixasPage() {
             </div>
           </div>
 
-          <div>
-            <label className="label">Quantidade de Parcelas *</label>
-            <input type="number" min="1" {...register('qtd_parcelas', { required: true, min: 1, valueAsNumber: true })} className="input" />
-          </div>
-
-          <div>
-            <label className="label">Percentuais por Parcela (%) *</label>
-            <textarea
-              {...register('percentuais_texto', { required: true })}
-              className="input min-h-[96px]"
-              placeholder="Ex.: 0.35, 0.35, 0.35, ..."
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Informe {qtdParcelas || 0} percentuais separados por vírgula, ponto e vírgula ou quebra de linha.
-            </p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Percentual Total (%) *</label>
+              <input type="number" step="0.0001" min="0.0001" {...register('percentual_total', { required: true, valueAsNumber: true })} className="input" />
+            </div>
+            <div>
+              <label className="label">Quantidade de Parcelas *</label>
+              <input type="number" min="1" {...register('qtd_parcelas', { required: true, min: 1, valueAsNumber: true })} className="input" />
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <input type="checkbox" id="ativo" {...register('ativo')} className="w-4 h-4" />
-            <label htmlFor="ativo" className="text-sm">Ativo</label>
+            <input type="checkbox" id="ativo_vendedor" {...register('ativo')} className="w-4 h-4" />
+            <label htmlFor="ativo_vendedor" className="text-sm">Ativo</label>
           </div>
+
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary">Cancelar</button>
             <button type="submit" disabled={saving} className="btn-primary">{saving ? 'Salvando...' : 'Salvar'}</button>

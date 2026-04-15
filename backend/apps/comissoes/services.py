@@ -1,8 +1,60 @@
 ﻿from datetime import date
 from decimal import Decimal
-from .models import ParcelaComissao, LogAlteracao
+from django.db import models
+
+from .models import ParcelaComissao, LogAlteracao, BonusMensalCoordenador
 from apps.vendas.models import Venda
 from apps.vendas.services import calcular_primeiro_vencimento, calcular_plano_parcelas
+
+BONUS_COORDENADOR_LIMITE = Decimal("3500000.00")
+BONUS_COORDENADOR_PERCENTUAL = Decimal("0.2")
+
+
+def _to_decimal(value) -> Decimal:
+    return Decimal(str(value))
+
+
+def _map_por_numero(parcelas_data):
+    return {int(p["numero_parcela"]): p for p in parcelas_data}
+
+
+def _atualizar_bonus_coordenador(venda: Venda):
+    coordenador = venda.vendedor.coordenador
+    ano = venda.data_venda.year
+    mes = venda.data_venda.month
+
+    total_vendas_mes = (
+        Venda.objects.filter(
+            vendedor__coordenador=coordenador,
+            data_venda__year=ano,
+            data_venda__month=mes,
+        )
+        .exclude(status="cancelada")
+        .aggregate(total=models.Sum("valor_bem"))
+        .get("total")
+        or Decimal("0")
+    )
+
+    bonus = BonusMensalCoordenador.objects.filter(coordenador=coordenador, ano=ano, mes=mes).first()
+
+    if total_vendas_mes > BONUS_COORDENADOR_LIMITE:
+        valor_bonus = (total_vendas_mes * BONUS_COORDENADOR_PERCENTUAL / Decimal("100")).quantize(Decimal("0.01"))
+        if bonus:
+            bonus.total_vendas_mes = total_vendas_mes
+            bonus.percentual_bonus = BONUS_COORDENADOR_PERCENTUAL
+            bonus.valor_bonus = valor_bonus
+            bonus.save(update_fields=["total_vendas_mes", "percentual_bonus", "valor_bonus", "atualizado_em"])
+        else:
+            BonusMensalCoordenador.objects.create(
+                coordenador=coordenador,
+                ano=ano,
+                mes=mes,
+                total_vendas_mes=total_vendas_mes,
+                percentual_bonus=BONUS_COORDENADOR_PERCENTUAL,
+                valor_bonus=valor_bonus,
+            )
+    elif bonus:
+        bonus.delete()
 
 
 def gerar_parcelas(venda: Venda, usuario=None) -> list:
@@ -11,35 +63,103 @@ def gerar_parcelas(venda: Venda, usuario=None) -> list:
 
     primeiro_vencimento = calcular_primeiro_vencimento(venda.data_venda, venda.consorcio)
 
+    supervisor_data, total_supervisor_base = calcular_plano_parcelas(
+        venda.valor_bem,
+        venda.consorcio,
+        primeiro_vencimento,
+        perfil="supervisor",
+    )
+    vendedor_data, total_vendedor = calcular_plano_parcelas(
+        venda.valor_bem,
+        venda.consorcio,
+        primeiro_vencimento,
+        perfil="vendedor",
+    )
+    coordenador_data, _ = calcular_plano_parcelas(
+        venda.valor_bem,
+        venda.consorcio,
+        primeiro_vencimento,
+        perfil="coordenador",
+    )
+
+    if not supervisor_data:
+        raise ValueError("Não há faixa de comissão do Supervisor para este consórcio e valor.")
+    if not vendedor_data:
+        raise ValueError("Não há faixa de comissão do Vendedor para o valor da venda.")
+    if not coordenador_data:
+        raise ValueError("Não há faixa de comissão do Coordenador para o valor da venda.")
+
+    sup_map = _map_por_numero(supervisor_data)
+    ven_map = _map_por_numero(vendedor_data)
+    coo_map = _map_por_numero(coordenador_data)
+
+    numeros = sorted(set(sup_map.keys()) | set(ven_map.keys()) | set(coo_map.keys()))
+
     parcelas = []
-    total_vendedor = Decimal("0")
+    for numero in numeros:
+        supervisor_item = sup_map.get(numero)
+        vendedor_item = ven_map.get(numero)
+        coordenador_item = coo_map.get(numero)
 
-    for perfil in ("vendedor", "coordenador", "supervisor"):
-        parcelas_data, total = calcular_plano_parcelas(
-            venda.valor_bem,
-            venda.consorcio,
-            primeiro_vencimento,
-            perfil=perfil,
-        )
+        valor_supervisor_bruto = _to_decimal(supervisor_item["valor"]) if supervisor_item else Decimal("0")
+        valor_vendedor = _to_decimal(vendedor_item["valor"]) if vendedor_item else Decimal("0")
+        valor_coordenador = _to_decimal(coordenador_item["valor"]) if coordenador_item else Decimal("0")
 
-        if perfil == "vendedor":
-            total_vendedor = total
+        valor_supervisor_liquido = (valor_supervisor_bruto - valor_vendedor - valor_coordenador).quantize(Decimal("0.01"))
+        if valor_supervisor_liquido < 0:
+            raise ValueError(
+                "Configuração inválida: comissão do Supervisor ficou negativa após descontar Coordenador e Vendedor."
+            )
 
-        for p in parcelas_data:
-            parcela = ParcelaComissao.objects.create(
+        if vendedor_item:
+            parcelas.append(
+                ParcelaComissao.objects.create(
+                    venda=venda,
+                    perfil_comissao="vendedor",
+                    numero_parcela=numero,
+                    data_vencimento=vendedor_item["data_vencimento"],
+                    valor=valor_vendedor,
+                    percentual=_to_decimal(vendedor_item["percentual"]),
+                    status="pendente",
+                )
+            )
+
+        if coordenador_item:
+            parcelas.append(
+                ParcelaComissao.objects.create(
+                    venda=venda,
+                    perfil_comissao="coordenador",
+                    numero_parcela=numero,
+                    data_vencimento=coordenador_item["data_vencimento"],
+                    valor=valor_coordenador,
+                    percentual=_to_decimal(coordenador_item["percentual"]),
+                    status="pendente",
+                )
+            )
+
+        percentual_supervisor_liquido = Decimal("0")
+        if venda.valor_bem and venda.valor_bem > 0:
+            percentual_supervisor_liquido = (
+                valor_supervisor_liquido * Decimal("100") / venda.valor_bem
+            ).quantize(Decimal("0.0001"))
+
+        parcelas.append(
+            ParcelaComissao.objects.create(
                 venda=venda,
-                perfil_comissao=perfil,
-                numero_parcela=p["numero_parcela"],
-                data_vencimento=p["data_vencimento"],
-                valor=Decimal(str(p["valor"])),
-                percentual=Decimal(str(p["percentual"])),
+                perfil_comissao="supervisor",
+                numero_parcela=numero,
+                data_vencimento=(supervisor_item or vendedor_item or coordenador_item)["data_vencimento"],
+                valor=valor_supervisor_liquido,
+                percentual=percentual_supervisor_liquido,
                 status="pendente",
             )
-            parcelas.append(parcela)
+        )
 
-    # Mantém compatibilidade com o campo existente da venda, refletindo comissão do vendedor.
     venda.valor_total_comissao = total_vendedor
     venda.save(update_fields=["valor_total_comissao"])
+
+    _ = total_supervisor_base  # valor mantido para rastreabilidade futura
+    _atualizar_bonus_coordenador(venda)
 
     return parcelas
 
