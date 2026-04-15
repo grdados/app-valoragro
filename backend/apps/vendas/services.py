@@ -1,5 +1,6 @@
 ﻿from datetime import date
 from decimal import Decimal, ROUND_HALF_UP
+from typing import Optional
 
 from dateutil.relativedelta import relativedelta
 
@@ -41,20 +42,15 @@ def _get_faixa_supervisor(consorcio: Consorcio, valor_bem: Decimal):
 
 
 def obter_indice_faixa_supervisor(consorcio: Consorcio, valor_bem: Decimal):
-    faixas = list(
-        consorcio.faixas.filter(ativo=True)
-        .order_by("valor_min", "id")
-    )
+    faixas = list(consorcio.faixas.filter(ativo=True).order_by("valor_min", "id"))
     for idx, faixa in enumerate(faixas, start=1):
         if faixa.valor_min <= valor_bem <= faixa.valor_max:
             return idx
     return None
 
 
-def _get_faixa_tabela(model, valor_bem: Decimal, indice_faixa: int | None = None):
-    # 1) Regra principal: pega a faixa que cobre o valor e é mais específica.
-    # Em caso de sobreposição, prioriza maior valor_min (faixa mais "alta")
-    # e depois ID mais recente.
+def _get_faixa_tabela(model, valor_bem: Decimal, indice_faixa: Optional[int] = None):
+    # Main rule: choose the most specific active range that contains valor_bem.
     candidatas = list(
         model.objects.filter(
             ativo=True,
@@ -65,15 +61,15 @@ def _get_faixa_tabela(model, valor_bem: Decimal, indice_faixa: int | None = None
     if candidatas:
         candidatas.sort(
             key=lambda f: (
-                f.valor_min,  # maior primeiro
-                -(f.valor_max - f.valor_min),  # menor intervalo primeiro
-                f.id,  # mais recente primeiro
+                f.valor_min,
+                -(f.valor_max - f.valor_min),
+                f.id,
             ),
             reverse=True,
         )
         return candidatas[0]
 
-    # 2) Fallback por índice da faixa do consórcio (compatibilidade).
+    # Fallback by supervisor range index for legacy compatibility.
     if indice_faixa is not None:
         faixas = list(model.objects.filter(ativo=True).order_by("valor_min", "id"))
         if faixas:
@@ -86,7 +82,6 @@ def _get_faixa_tabela(model, valor_bem: Decimal, indice_faixa: int | None = None
             valor_min__lte=valor_bem,
             valor_max__gte=valor_bem,
         )
-        # Prioriza o cadastro mais recente quando existirem faixas sobrepostas.
         .order_by("-id")
         .first()
     )
@@ -157,7 +152,12 @@ def calcular_plano_supervisor(valor_bem: Decimal, consorcio: Consorcio, primeiro
     return parcelas, total
 
 
-def calcular_plano_por_tabela(valor_bem: Decimal, primeiro_vencimento: date, perfil: str, indice_faixa: int | None = None):
+def calcular_plano_por_tabela(
+    valor_bem: Decimal,
+    primeiro_vencimento: date,
+    perfil: str,
+    indice_faixa: Optional[int] = None,
+):
     model = FaixaComissaoVendedor if perfil == "vendedor" else FaixaComissaoCoordenador
     faixa = _get_faixa_tabela(model, valor_bem, indice_faixa=indice_faixa)
     if not faixa:
@@ -193,7 +193,7 @@ def calcular_plano_parcelas(
     consorcio: Consorcio,
     primeiro_vencimento: date,
     perfil: str = "vendedor",
-    indice_faixa: int | None = None,
+    indice_faixa: Optional[int] = None,
 ):
     if perfil == "supervisor":
         return calcular_plano_supervisor(valor_bem, consorcio, primeiro_vencimento)
