@@ -47,7 +47,8 @@ def _get_faixa_tabela(model, valor_bem: Decimal):
             valor_min__lte=valor_bem,
             valor_max__gte=valor_bem,
         )
-        .order_by("valor_min")
+        # Prioriza o cadastro mais recente quando existirem faixas sobrepostas.
+        .order_by("-id")
         .first()
     )
 

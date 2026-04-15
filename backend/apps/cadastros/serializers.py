@@ -190,10 +190,12 @@ class _BaseFaixaPerfilSerializer(serializers.ModelSerializer):
         fields = ["id", "valor_min", "valor_max", "percentual_total", "qtd_parcelas", "ativo"]
 
     def validate(self, attrs):
+        model = self.Meta.model
         valor_min = attrs.get("valor_min", getattr(self.instance, "valor_min", None))
         valor_max = attrs.get("valor_max", getattr(self.instance, "valor_max", None))
         qtd_parcelas = attrs.get("qtd_parcelas", getattr(self.instance, "qtd_parcelas", 1))
         percentual_total = attrs.get("percentual_total", getattr(self.instance, "percentual_total", None))
+        ativo = attrs.get("ativo", getattr(self.instance, "ativo", True))
 
         if valor_min is not None and valor_max is not None and valor_min > valor_max:
             raise serializers.ValidationError({"valor_max": "Valor máximo deve ser maior ou igual ao valor mínimo."})
@@ -203,6 +205,26 @@ class _BaseFaixaPerfilSerializer(serializers.ModelSerializer):
 
         if percentual_total is not None and float(percentual_total) <= 0:
             raise serializers.ValidationError({"percentual_total": "Percentual total deve ser maior que zero."})
+
+        # Evita sobreposição de intervalos ativos.
+        if ativo and valor_min is not None and valor_max is not None:
+            conflitos = model.objects.filter(
+                ativo=True,
+                valor_min__lte=valor_max,
+                valor_max__gte=valor_min,
+            )
+            if self.instance:
+                conflitos = conflitos.exclude(id=self.instance.id)
+            if conflitos.exists():
+                primeiro = conflitos.order_by("-id").first()
+                raise serializers.ValidationError(
+                    {
+                        "valor_min": (
+                            f"Faixa sobreposta com o registro ID {primeiro.id} "
+                            f"({primeiro.valor_min} até {primeiro.valor_max})."
+                        )
+                    }
+                )
 
         return attrs
 

@@ -43,6 +43,25 @@ const toNumberSafe = (value: unknown): number => {
   return Number(raw) || 0
 }
 
+const pickFaixaVendedor = (faixas: FaixaVendedor[], valorBem: number): FaixaVendedor | undefined => {
+  const candidatas = faixas
+    .filter((f) => f.ativo)
+    .map((f) => {
+      const min = toNumberSafe(f.valor_min)
+      const max = toNumberSafe(f.valor_max)
+      return { faixa: f, min, max, largura: max - min }
+    })
+    .filter((x) => valorBem >= x.min && valorBem <= x.max)
+    .sort((a, b) => {
+      // 1) Faixa mais específica (menor intervalo)
+      if (a.largura !== b.largura) return a.largura - b.largura
+      // 2) Mais recente
+      return (b.faixa.id || 0) - (a.faixa.id || 0)
+    })
+
+  return candidatas[0]?.faixa
+}
+
 const buildPlanoVendedor = (
   valorBem: number,
   percentualTotal: number,
@@ -178,13 +197,7 @@ export default function NovaVendaPage() {
         try {
           const faixaResp = await faixasVendedorApi.list()
           const faixas: FaixaVendedor[] = faixaResp.data.results || faixaResp.data || []
-          const faixaAtiva = faixas
-            .filter((f) => f.ativo)
-            .find((f) => {
-              const min = toNumberSafe(f.valor_min)
-              const max = toNumberSafe(f.valor_max)
-              return valor_bem >= min && valor_bem <= max
-            })
+          const faixaAtiva = pickFaixaVendedor(faixas, valor_bem)
 
           if (faixaAtiva) {
             const percentualTotal = toNumberSafe(faixaAtiva.percentual_total)
