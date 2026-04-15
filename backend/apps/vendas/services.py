@@ -50,10 +50,26 @@ def obter_indice_faixa_supervisor(consorcio: Consorcio, valor_bem: Decimal):
 
 
 def _get_faixa_tabela(model, valor_bem: Decimal, indice_faixa: Optional[int] = None):
-    # Main rule: choose the most specific active range that contains valor_bem.
+    qs = model.objects.filter(ativo=True)
+
+    # Proteção contra dados legados: tabelas de Vendedor/Coordenador não devem usar
+    # percentuais "altos" herdados da tabela do Supervisor.
+    if model in (FaixaComissaoVendedor, FaixaComissaoCoordenador):
+        qs_baixo = qs.filter(percentual_total__lte=Decimal("2.0"))
+        if qs_baixo.exists():
+            qs = qs_baixo
+
+    # Regra principal do negócio: quando temos o índice da faixa do consórcio
+    # selecionada, usamos a MESMA posição na tabela do perfil.
+    if indice_faixa is not None:
+        faixas = list(qs.order_by("valor_min", "id"))
+        if faixas:
+            idx = max(0, min(indice_faixa - 1, len(faixas) - 1))
+            return faixas[idx]
+
+    # Fallback por valor, priorizando faixa mais específica e mais recente.
     candidatas = list(
-        model.objects.filter(
-            ativo=True,
+        qs.filter(
             valor_min__lte=valor_bem,
             valor_max__gte=valor_bem,
         )
@@ -69,22 +85,7 @@ def _get_faixa_tabela(model, valor_bem: Decimal, indice_faixa: Optional[int] = N
         )
         return candidatas[0]
 
-    # Fallback by supervisor range index for legacy compatibility.
-    if indice_faixa is not None:
-        faixas = list(model.objects.filter(ativo=True).order_by("valor_min", "id"))
-        if faixas:
-            idx = max(0, min(indice_faixa - 1, len(faixas) - 1))
-            return faixas[idx]
-
-    return (
-        model.objects.filter(
-            ativo=True,
-            valor_min__lte=valor_bem,
-            valor_max__gte=valor_bem,
-        )
-        .order_by("-id")
-        .first()
-    )
+    return qs.order_by("-id").first()
 
 
 def identificar_faixa(coban_sigla: str, tipo_bem_nome: str, valor_bem: Decimal, data_venda: date):
