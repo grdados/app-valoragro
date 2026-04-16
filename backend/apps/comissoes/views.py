@@ -13,18 +13,19 @@ def scope_parcelas(qs, user):
     if user.is_dev():
         return qs
     if user.is_supervisor():
-        if user.supervisor_ref:
-            return qs.filter(venda__vendedor__coordenador__supervisor=user.supervisor_ref)
+        # Supervisor visualiza todas as comissões.
         return qs
     if user.is_coordenador():
         if user.coordenador_ref:
+            # Coordenador visualiza somente comissões dos vendedores vinculados.
             return qs.filter(
                 venda__vendedor__coordenador=user.coordenador_ref,
-                perfil_comissao__in=["coordenador", "vendedor"],
+                perfil_comissao="vendedor",
             )
         return qs
     if user.is_vendedor():
         if user.vendedor_ref:
+            # Vendedor visualiza somente as próprias comissões.
             return qs.filter(venda__vendedor=user.vendedor_ref, perfil_comissao="vendedor")
         return qs.none()
     return qs.none()
